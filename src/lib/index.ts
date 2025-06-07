@@ -1,4 +1,4 @@
 // place files you want to import through the `$lib` alias in this folder.
 
-// Export grid components
-export { Grid, Container } from './components';
+// Export layout components
+export { Grid, Container, Header, Footer } from './components';

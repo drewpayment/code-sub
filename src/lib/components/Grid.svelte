@@ -62,8 +62,11 @@
 		
 		return finalClasses;
 	});
+
+	// Ensure grid handles mobile touch scrolling
+	const gridClasses_enhanced = $derived(gridClasses + ' mobile-scroll');
 </script>
 
-<div class={gridClasses}>
+<div class={gridClasses_enhanced}>
 	{@render children()}
 </div> 
