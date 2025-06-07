@@ -1,0 +1,11 @@
+# Task ID: 11
+# Title: Integrate Chatwoot
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: Integrate Chatwoot for real-time customer support, ensuring chat accessibility for both prospective and existing customers.
+# Details:
+
+
+# Test Strategy:
+

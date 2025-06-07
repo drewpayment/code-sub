@@ -1,0 +1,37 @@
+# Task ID: 7
+# Title: Implement Navigation & Routing
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: Implement the fixed navigation bar with links to main sections (Services, About, Process, Pricing, Contact) and an Account Management link.
+# Details:
+
+
+# Test Strategy:
+
+
+# Subtasks:
+## 1. SvelteKit Route Configuration [pending]
+### Dependencies: None
+### Description: Set up the file-system based routing structure for the application
+### Details:
+Create the necessary route files in the src/routes directory following SvelteKit's filesystem-based routing conventions. Implement basic pages with +page.svelte files, and consider advanced routing features like dynamic parameters, optional parameters, and catch-all routes as needed for the application structure.
+
+## 2. Navigation Component Development [pending]
+### Dependencies: 7.1
+### Description: Create a reusable navigation component for desktop view
+### Details:
+Develop a main navigation component that will be used across the application. Implement links to all routes defined in the routing structure. Ensure the component is modular and can be easily imported into layouts. Consider using SvelteKit's navigation features for client-side navigation between routes.
+
+## 3. Mobile Navigation Adaptation [pending]
+### Dependencies: 7.2
+### Description: Adapt the navigation component for mobile devices
+### Details:
+Modify the navigation component to be responsive on mobile devices. Implement a hamburger menu or similar mobile-friendly navigation pattern. Add toggle functionality to show/hide the mobile menu. Ensure smooth transitions between desktop and mobile views using CSS media queries.
+
+## 4. Active State Management [pending]
+### Dependencies: 7.2, 7.3
+### Description: Implement active state highlighting for current route
+### Details:
+Add logic to highlight the currently active navigation item based on the current route. Use SvelteKit's routing utilities to determine the active page. Implement visual indicators (like different styling) for active navigation items in both desktop and mobile views. Ensure the active state updates correctly during navigation.
+
