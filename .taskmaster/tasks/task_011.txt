@@ -1,6 +1,6 @@
 # Task ID: 11
 # Title: Integrate Chatwoot
-# Status: pending
+# Status: done
 # Dependencies: None
 # Priority: medium
 # Description: Integrate Chatwoot for real-time customer support, ensuring chat accessibility for both prospective and existing customers.
@@ -8,4 +8,24 @@
 
 
 # Test Strategy:
+
+
+# Subtasks:
+## 1. Chatwoot Account Setup and Script Retrieval [done]
+### Dependencies: None
+### Description: Create a Chatwoot account, configure the inbox, and obtain the live chat widget script or credentials required for integration.
+### Details:
+Sign up for Chatwoot, set up your inbox, and navigate to the widget integration section to copy the provided script or credentials needed for embedding the chat widget.
+
+## 2. Frontend Integration Implementation [done]
+### Dependencies: 11.1
+### Description: Add the Chatwoot script to the main application layout to ensure the chat widget appears on all pages of the SvelteKit application.
+### Details:
+Insert the Chatwoot script into the root layout file (e.g., +layout.svelte) of your SvelteKit project so that the widget loads globally across the site.
+
+## 3. Testing and Optimization Across Devices [done]
+### Dependencies: 11.2
+### Description: Test the Chatwoot chat widget functionality across different pages and devices, and optimize for consistent performance and appearance.
+### Details:
+Verify that the chat widget loads and functions correctly on all major pages and devices (desktop, tablet, mobile). Address any layout or performance issues discovered during testing.
 

@@ -1,15 +1,14 @@
 <script lang="ts">
-	
-	interface Props {
-		/**
-		 * Additional CSS classes
-		 */
-		class?: string;
-	}
+	import { Container } from '$lib';
+	import { page } from '$app/stores';
 
-	let {
-		class: className = ''
-	}: Props = $props();
+	const navLinks = [
+		{ href: '/services', text: 'Services' },
+		{ href: '/about', text: 'About' },
+		{ href: '/process', text: 'Process' },
+		{ href: '/pricing', text: 'Pricing' },
+		{ href: '/contact', text: 'Contact' },
+	];
 
 	// Mobile menu state
 	let mobileMenuOpen = $state(false);
@@ -41,38 +40,42 @@
 	}
 </script>
 
-<header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50 {className}">
-	<div class="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-		<div class="flex items-center justify-between h-16">
-			<!-- Logo/Brand -->
-			<div class="flex-shrink-0">
-				<a href="/" class="flex items-center">
-					<div class="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
-						<span class="text-white font-bold text-lg">C</span>
-					</div>
-					<span class="ml-2 text-xl font-bold text-gray-900 hidden sm:block">Code-Sub</span>
-				</a>
-			</div>
+<header class="bg-white shadow-md sticky top-0 z-50">
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<div class="flex justify-between items-center h-16 relative">
+			<!-- Logo -->
+			<a href="/" class="text-2xl font-bold text-gray-900">
+				Code<span class="text-blue-600">Sub</span>
+			</a>
 
 			<!-- Desktop Navigation -->
-			<nav class="hidden md:flex space-x-8">
-				{#each navItems as item}
+			<nav class="hidden md:flex items-center absolute left-1/2 -translate-x-1/2 space-x-6">
+				{#each navLinks as link}
 					<a 
-						href={item.href}
-						class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
+						href={link.href} 
+						class="transition-colors"
+						class:text-blue-600={$page.url.pathname === link.href}
+						class:text-gray-600={$page.url.pathname !== link.href}
+						class:hover:text-blue-600={$page.url.pathname !== link.href}
 					>
-						{item.label}
+						{link.text}
 					</a>
 				{/each}
 			</nav>
 
-			<!-- Desktop CTA -->
+			<!-- Account & CTA -->
 			<div class="hidden md:flex items-center space-x-4">
 				<a 
-					href="/contact" 
-					class="btn btn-primary px-4 py-2 text-sm"
+					href="/account"
+					class="transition-colors"
+					class:text-blue-600={$page.url.pathname === '/account'}
+					class:text-gray-600={$page.url.pathname !== '/account'}
+					class:hover:text-blue-600={$page.url.pathname !== '/account'}
 				>
-					Get Started
+					Sign In
+				</a>
+				<a href="/contact" class="btn btn-primary px-4 py-2 text-sm">
+					Get a Quote
 				</a>
 			</div>
 
@@ -105,35 +108,42 @@
 				</button>
 			</div>
 		</div>
+	</div>
 
-		<!-- Mobile Navigation Menu -->
-		{#if mobileMenuOpen}
-			<div class="md:hidden transition-all duration-300 ease-in-out">
-				<div class="px-2 pt-2 pb-3 space-y-1 border-t border-gray-200 mt-2 bg-white shadow-lg">
-					{#each navItems as item}
-						<a
-							href={item.href}
-							onclick={closeMobileMenu}
-							class="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 text-base font-medium rounded-md transition-colors duration-200"
-						>
-							{item.label}
-						</a>
-					{/each}
-					
-					<!-- Mobile CTA -->
-					<div class="pt-4 pb-2">
-						<a 
-							href="/contact"
-							onclick={closeMobileMenu}
-							class="btn btn-primary w-full text-center block px-3 py-2 text-base font-medium"
-						>
-							Get Started
-						</a>
-					</div>
+	<!-- Mobile Navigation Menu -->
+	{#if mobileMenuOpen}
+		<div class="md:hidden">
+			<div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+				{#each navLinks as link}
+					<a 
+						href={link.href} 
+						onclick={() => mobileMenuOpen = false} 
+						class="block px-3 py-2 rounded-md text-base font-medium"
+						class:bg-blue-50={$page.url.pathname === link.href}
+						class:text-blue-700={$page.url.pathname === link.href}
+						class:text-gray-700={$page.url.pathname !== link.href}
+						class:hover:text-gray-900={$page.url.pathname !== link.href}
+						class:hover:bg-gray-50={$page.url.pathname !== link.href}
+					>{link.text}</a>
+				{/each}
+			</div>
+			<div class="pt-4 pb-3 border-t border-gray-200">
+				<div class="flex items-center px-5">
+					<a 
+						href="/account" 
+						onclick={() => mobileMenuOpen = false} 
+						class="flex-grow text-base font-medium p-2 rounded-md"
+						class:bg-blue-50={$page.url.pathname === '/account'}
+						class:text-blue-700={$page.url.pathname === '/account'}
+						class:text-gray-700={$page.url.pathname !== '/account'}
+						class:hover:text-gray-900={$page.url.pathname !== '/account'}
+						class:hover:bg-gray-50={$page.url.pathname !== '/account'}
+					>Sign In</a>
+					<a href="/contact" onclick={() => mobileMenuOpen = false} class="ml-4 btn btn-primary w-full">Get a Quote</a>
 				</div>
 			</div>
-		{/if}
-	</div>
+		</div>
+	{/if}
 </header>
 
 <style>

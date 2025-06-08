@@ -1,6 +1,6 @@
 # Task ID: 8
 # Title: Develop About & Process Sections
-# Status: pending
+# Status: done
 # Dependencies: None
 # Priority: medium
 # Description: Create the About/Why Choose Us section, highlighting the partnership approach, client-first mentality, security standards, and experience.

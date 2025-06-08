@@ -1,6 +1,6 @@
 # Task ID: 15
 # Title: Implement SEO
-# Status: pending
+# Status: deferred
 # Dependencies: None
 # Priority: medium
 # Description: Implement SEO fundamentals, including meta tags, structured data, and semantic HTML, to improve search engine visibility.

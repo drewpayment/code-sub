@@ -1,14 +1,34 @@
 <script lang="ts">
 	import '../app.css';
 	import { Header, Footer } from '$lib';
-
-	let { children } = $props();
 </script>
 
-<div class="min-h-screen bg-gray-50 flex flex-col">
+<svelte:head>
+	<script>
+		window.chatwootSettings = {"position":"right","type":"standard","launcherTitle":"Chat with us"};
+		(function(d,t) {
+			var BASE_URL="http://chatwoot.hoytlabs.cloud";
+			var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+			g.src=BASE_URL+"/packs/js/sdk.js";
+			g.defer = true;
+			g.async = true;
+			s.parentNode.insertBefore(g,s);
+			g.onload=function(){
+				window.chatwootSDK.run({
+					websiteToken: '6YYzHFFuiJiJSrNJhJ6xVWtE',
+					baseUrl: BASE_URL
+				})
+			}
+		})(document,"script");
+	</script>	
+</svelte:head>
+
+<div class="min-h-screen flex flex-col">
 	<Header />
-	<main class="px-4 sm:px-6 lg:px-8 flex-1">
-		{@render children()}
+
+	<main class="flex-1">
+		<slot />
 	</main>
+
 	<Footer />
 </div>
