@@ -452,8 +452,37 @@
       "testStrategy": "",
       "priority": "medium",
       "dependencies": [],
-      "status": "pending",
-      "subtasks": []
+      "status": "done",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Chatwoot Account Setup and Script Retrieval",
+          "description": "Create a Chatwoot account, configure the inbox, and obtain the live chat widget script or credentials required for integration.",
+          "dependencies": [],
+          "details": "Sign up for Chatwoot, set up your inbox, and navigate to the widget integration section to copy the provided script or credentials needed for embedding the chat widget.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Frontend Integration Implementation",
+          "description": "Add the Chatwoot script to the main application layout to ensure the chat widget appears on all pages of the SvelteKit application.",
+          "dependencies": [
+            1
+          ],
+          "details": "Insert the Chatwoot script into the root layout file (e.g., +layout.svelte) of your SvelteKit project so that the widget loads globally across the site.",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Testing and Optimization Across Devices",
+          "description": "Test the Chatwoot chat widget functionality across different pages and devices, and optimize for consistent performance and appearance.",
+          "dependencies": [
+            2
+          ],
+          "details": "Verify that the chat widget loads and functions correctly on all major pages and devices (desktop, tablet, mobile). Address any layout or performance issues discovered during testing.",
+          "status": "done"
+        }
+      ]
     },
     {
       "id": 12,
@@ -463,7 +492,7 @@
       "testStrategy": "",
       "priority": "low",
       "dependencies": [],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -474,15 +503,15 @@
       "testStrategy": "",
       "priority": "medium",
       "dependencies": [],
-      "status": "pending",
+      "status": "deferred",
       "subtasks": [
         {
           "id": 1,
           "title": "Image Optimization Implementation",
           "description": "Implement techniques to optimize images, including using next-gen formats (WebP, AVIF), compressing images, and serving responsive images with srcset for different device sizes.",
           "dependencies": [],
-          "details": "Ensure all images are compressed before upload, use responsive image markup, and convert legacy formats to WebP or AVIF. Integrate image optimization into the build process or use a CDN with automatic image optimization features.",
-          "status": "pending"
+          "details": "Ensure all images are compressed before upload, use responsive image markup, and convert legacy formats to WebP or AVIF. Integrate image optimization into the build process or use a CDN with automatic image optimization features.\n<info added on 2025-06-08T03:08:08.105Z>\nImage optimization for the hero section was implemented previously using the `<picture>` element with WebP formats and responsive `srcset` attributes. The `loading=\"eager\"` attribute is also correctly applied for this above-the-fold image. As there are no other images on the site, no further action is needed for this subtask.\n</info added on 2025-06-08T03:08:08.105Z>",
+          "status": "deferred"
         },
         {
           "id": 2,
@@ -534,7 +563,7 @@
       "testStrategy": "",
       "priority": "medium",
       "dependencies": [],
-      "status": "pending",
+      "status": "deferred",
       "subtasks": []
     },
     {
@@ -545,7 +574,7 @@
       "testStrategy": "",
       "priority": "medium",
       "dependencies": [],
-      "status": "pending",
+      "status": "deferred",
       "subtasks": []
     }
   ]

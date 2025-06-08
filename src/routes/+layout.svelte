@@ -3,6 +3,26 @@
 	import { Header, Footer } from '$lib';
 </script>
 
+<svelte:head>
+	<script>
+		window.chatwootSettings = {"position":"right","type":"standard","launcherTitle":"Chat with us"};
+		(function(d,t) {
+			var BASE_URL="http://chatwoot.hoytlabs.cloud";
+			var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+			g.src=BASE_URL+"/packs/js/sdk.js";
+			g.defer = true;
+			g.async = true;
+			s.parentNode.insertBefore(g,s);
+			g.onload=function(){
+				window.chatwootSDK.run({
+					websiteToken: '6YYzHFFuiJiJSrNJhJ6xVWtE',
+					baseUrl: BASE_URL
+				})
+			}
+		})(document,"script");
+	</script>	
+</svelte:head>
+
 <div class="min-h-screen flex flex-col">
 	<Header />
 

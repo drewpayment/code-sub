@@ -31,7 +31,7 @@
 <!-- Hero Section -->
 <div class="relative overflow-hidden">
   <!-- Background Image -->
-  <picture>
+  <!-- <picture>
     <source media="(min-width: 1024px)" srcset="/images/hero/hero-main-1920x1080.webp" />
     <source media="(min-width: 768px)" srcset="/images/hero/hero-main-1024x600.webp" />
     <img 
@@ -40,8 +40,7 @@
       class="absolute inset-0 w-full h-full object-cover z-10"
       loading="eager"
     />
-  </picture>
-  <!-- Overlay -->
+  </picture> -->
   <div class="absolute inset-0 bg-gray-900 bg-opacity-60 z-20"></div>
 
   <div class="relative z-30 py-16 lg:py-24 -mx-4 sm:-mx-6 lg:-mx-8">
