@@ -2,579 +2,147 @@
   "tasks": [
     {
       "id": 1,
-      "title": "SvelteKit Project Setup",
-      "description": "Initialize SvelteKit project with necessary configurations (e.g., TypeScript, ESLint, Prettier). Set up build tools and deployment pipeline.",
-      "details": "",
-      "testStrategy": "",
+      "title": "Integrate Pocketbase JS SDK and Initialize Global Auth Store",
+      "description": "Set up the Pocketbase JavaScript SDK within the SvelteKit application. Initialize and expose a global Svelte store to manage and react to `pb.authStore` changes.",
+      "details": "Install the `pocketbase` npm package. Create a Svelte store (e.g., `src/lib/stores/authStore.js`) that initializes a Pocketbase client instance: `new PocketBase('https://pocketbase.hoytlabs.cloud/')`. The store should subscribe to `pb.authStore.onChange((token, model) => { /* update reactive store variables like currentUser, isValid */ }, true)` to reflect auth state changes. Export the `pb` instance and reactive store variables (e.g., `currentUser`, `isValid`).",
+      "testStrategy": "Verify the Pocketbase client initializes without errors. Confirm the Svelte store correctly reflects the initial (logged-out) authentication state. Test that store variables update reactively when `pb.authStore` changes (can be simulated or tested after login/logout implementation).",
       "priority": "high",
       "dependencies": [],
-      "status": "done",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Initial Project Scaffolding",
-          "description": "Create a new SvelteKit project using the official scaffolding tool, select the desired template, and install dependencies.",
-          "dependencies": [],
-          "details": "Run `npm create svelte@latest` or `npx sv create my-app` to scaffold the project. Choose the skeleton project template and follow prompts. Navigate into the project directory and run `npm install` to install dependencies. Start the development server with `npm run dev` to verify setup.[1][5]",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "TypeScript Integration",
-          "description": "Enable and configure TypeScript support in the SvelteKit project.",
-          "dependencies": [
-            1
-          ],
-          "details": "During project scaffolding, opt-in for TypeScript when prompted. If not selected initially, add TypeScript by installing the necessary dependencies and renaming files to `.ts`/`.svelte`. Ensure `tsconfig.json` is present and properly configured for SvelteKit.[1][2]",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "ESLint and Prettier Setup",
-          "description": "Set up ESLint and Prettier for code linting and formatting in the SvelteKit project.",
-          "dependencies": [
-            2
-          ],
-          "details": "Install ESLint and Prettier as dev dependencies. Configure `.eslintrc` and `.prettierrc` files, ensuring compatibility with Svelte and TypeScript. Optionally, use SvelteKit's integration prompts or add recommended plugins manually.[2]\n<info added on 2025-06-06T22:30:47.551Z>\nPriority: Low. Defer until core functionality is complete.\n</info added on 2025-06-06T22:30:47.551Z>",
-          "status": "done"
-        },
-        {
-          "id": 4,
-          "title": "Build Pipeline Configuration",
-          "description": "Configure the build pipeline, including adapters and build scripts, for the SvelteKit project.",
-          "dependencies": [
-            3
-          ],
-          "details": "Choose and install the appropriate SvelteKit adapter (e.g., static, node, or cloud provider-specific). Update `svelte.config.js` to use the selected adapter. Adjust build scripts in `package.json` as needed for the deployment target.[5]\n<info added on 2025-06-06T22:30:55.548Z>\nPriority changed: This subtask has been deprioritized and can be deferred until later in the development process. Build pipeline configuration is not needed for initial development and can be set up when ready for production deployment.\n</info added on 2025-06-06T22:30:55.548Z>",
-          "status": "done"
-        },
-        {
-          "id": 5,
-          "title": "Deployment Workflow Setup",
-          "description": "Establish a deployment workflow for the SvelteKit project, targeting the chosen hosting environment.",
-          "dependencies": [
-            4
-          ],
-          "details": "Configure deployment scripts and CI/CD pipelines (e.g., GitHub Actions, Vercel, Netlify). Ensure environment variables and build outputs are correctly handled for the selected adapter and hosting platform.",
-          "status": "done"
-        }
-      ]
+      "status": "pending",
+      "subtasks": []
     },
     {
       "id": 2,
-      "title": "Establish Brand Identity & Design System",
-      "description": "Define the color palette, typography, and visual style guidelines to ensure a consistent and professional brand identity.",
-      "details": "",
-      "testStrategy": "",
+      "title": "Create User Registration Page (`/register`)",
+      "description": "Develop the `/register` page with a form for users to input their name, email, and password. Implement the logic to create a new user account using the Pocketbase SDK.",
+      "details": "Create a SvelteKit route for `/register`. Implement a form with input fields for `name`, `email`, `password`, and `passwordConfirm`. On submission, call `pb.collection('users').create({ name, email, password, passwordConfirm: data.passwordConfirm })`. Upon successful registration, Pocketbase typically logs the user in automatically; ensure this behavior and redirect to the homepage. Implement client-side validation for required fields, email format, and password matching. Ensure the page is responsive and visually consistent with existing design language.",
+      "testStrategy": "Test successful user registration with valid data; verify user is created in Pocketbase, redirected to homepage, and auth store reflects logged-in state. Test registration with invalid data (e.g., duplicate email, mismatched passwords, missing fields) and verify appropriate error messages (from Task 4) are shown.",
       "priority": "high",
-      "dependencies": [],
-      "status": "done",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Color Palette Definition",
-          "description": "Establish a comprehensive color palette for the brand, including primary, secondary, neutral, and feedback colors. Ensure accessibility by considering contrast guidelines and define color steps (e.g., 500, 600) for various use cases.",
-          "dependencies": [],
-          "details": "Document color choices and their intended uses, referencing accessibility standards such as WCAG. Prepare the palette for integration into the design system as design tokens.\n<info added on 2025-06-06T22:34:42.774Z>\nCOLOR PALETTE IMPLEMENTATION PROGRESS:\n\nDEFINED COMPREHENSIVE COLOR PALETTE:\n\nPRIMARY COLORS (Brand Identity):\n- Primary Blue: #2563eb (Blue 600) - Professional, trustworthy, tech-focused\n- Primary Light: #3b82f6 (Blue 500) - Lighter variant for hover states\n- Primary Dark: #1d4ed8 (Blue 700) - Darker variant for text/emphasis\n\nSECONDARY COLORS (Accent & Energy):\n- Accent Teal: #14b8a6 (Teal 500) - Fresh, modern, approachable\n- Accent Light: #5eead4 (Teal 300) - Light backgrounds, subtle highlights\n- Accent Dark: #0f766e (Teal 600) - Darker accent for contrast\n\nNEUTRAL COLORS (Content & Backgrounds):\n- Gray 50: #f9fafb - Light backgrounds, sections\n- Gray 100: #f3f4f6 - Card backgrounds\n- Gray 200: #e5e7eb - Borders, dividers\n- Gray 400: #9ca3af - Muted text, placeholders\n- Gray 600: #4b5563 - Secondary text\n- Gray 900: #111827 - Primary text, headings\n\nFEEDBACK COLORS (Status & Actions):\n- Success: #10b981 (Emerald 500) - Success states\n- Warning: #f59e0b (Amber 500) - Attention, warnings\n- Error: #ef4444 (Red 500) - Errors, destructive actions\n- Info: #06b6d4 (Cyan 500) - Information, neutral feedback\n\nSPECIAL COLORS (Conversion & CTAs):\n- CTA Primary: #2563eb (Primary Blue) - Main call-to-action buttons\n- CTA Secondary: #14b8a6 (Accent Teal) - Secondary actions\n- CTA Hover: #1d4ed8 (Primary Dark) - Hover states\n\nACCESSIBILITY COMPLIANCE:\nAll color combinations have been selected to meet WCAG 2.1 AA contrast standards. Primary text (Gray 900) on light backgrounds exceeds 4.5:1 ratio. CTA buttons maintain proper contrast for accessibility.\n\nDESIGN RATIONALE:\n- Blue conveys trust and professionalism for web development services\n- Teal adds modern, approachable energy while staying professional\n- Light gray backgrounds support the \"light and carefree\" aesthetic\n- Color palette suitable for small-to-medium business audience\n- Optimized for conversion-focused marketing content\n</info added on 2025-06-06T22:34:42.774Z>\n<info added on 2025-06-06T22:37:19.139Z>\nCORRECTED IMPLEMENTATION - TAILWIND APPROACH:\n\n✅ IMPLEMENTED COMPREHENSIVE COLOR PALETTE IN TAILWIND CONFIG:\n- Created tailwind.config.js with complete custom color system\n- Removed standalone CSS file in favor of Tailwind configuration\n- Implemented full color scales (50-950) for all color families\n\n✅ TAILWIND COLOR IMPLEMENTATION:\n- Primary colors: primary-{50-950} with DEFAULT, light, dark variants\n- Accent colors: accent-{50-950} with DEFAULT, light, dark variants  \n- Enhanced neutral scale: neutral-{50-950} for comprehensive grays\n- Feedback colors: success, warning, error, info with full scales\n- All colors WCAG 2.1 AA compliant for accessibility\n\n✅ ADDITIONAL ENHANCEMENTS:\n- Custom font family setup (Inter as primary sans-serif)\n- Marketing-specific spacing utilities (18, 88, 128)\n- Custom shadows for cards and CTAs (soft, medium, strong)\n- Custom animations for marketing interactions (fade-in, slide-up, bounce-gentle)\n\n✅ USAGE EXAMPLES NOW AVAILABLE:\n- bg-primary, text-primary, border-primary\n- bg-accent-light, text-neutral-600\n- shadow-soft, animate-fade-in\n- All standard Tailwind utilities with custom colors\n\nREADY FOR COMPONENT DEVELOPMENT: Color system fully integrated with Tailwind and ready for use across all SvelteKit components.\n</info added on 2025-06-06T22:37:19.139Z>",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "Typography Selection and Hierarchy",
-          "description": "Select brand-appropriate typefaces and define a clear typographic hierarchy (e.g., headings, body, captions). Specify font sizes, weights, line heights, and usage rules.",
-          "dependencies": [
-            1
-          ],
-          "details": "Ensure typography choices align with the brand identity and are accessible. Document the hierarchy for consistent application across all components.\n<info added on 2025-06-06T22:39:26.736Z>\nTYPOGRAPHY SYSTEM IMPLEMENTATION COMPLETE:\n\n✅ COMPREHENSIVE TAILWIND TYPOGRAPHY CONFIGURATION:\n- Extended tailwind.config.js with complete typography scale\n- Added font families: display, body (all using Inter)\n- Created comprehensive fontSize scale with built-in line-height and letter-spacing\n- Implemented fontWeight scale (100-900) with semantic naming\n- Added lineHeight and letterSpacing utilities\n\n✅ TYPOGRAPHY HIERARCHY DEFINED:\n- Display sizes: text-display-2xl (72px), text-display-xl (60px), text-display-lg (48px)\n- Heading sizes: text-h1 through text-h6 (36px down to 16px)\n- Body text: text-body-lg (18px), text-body (16px), text-body-sm (14px)  \n- UI text: text-button-lg, text-button, text-caption, text-overline\n\n✅ ACCESSIBILITY COMPLIANCE:\n- All sizes meet WCAG 2.1 AA standards\n- Proper line-height ratios for readability (1.5+ for body text)\n- Appropriate letter-spacing for large display text\n- High contrast color combinations documented\n\n✅ COMPREHENSIVE DOCUMENTATION:\n- Created src/lib/styles/typography.md with complete usage guide\n- Detailed examples for every text size and weight combination\n- Color combination guidelines for accessibility\n- Responsive typography patterns\n- Component examples (marketing cards, CTAs)\n- Quick reference for development team\n\n✅ READY-TO-USE CLASSES:\n- Hero text: \"text-display-2xl font-extrabold text-primary\"\n- Section headings: \"text-h2 font-bold text-neutral-900\"\n- Body text: \"text-body text-neutral-600\"\n- Buttons: \"text-button-lg font-medium\"\n- Captions: \"text-caption text-neutral-500\"\n\nINTEGRATION READY: Typography system fully integrated with Tailwind and ready for component development across the marketing homepage.\n</info added on 2025-06-06T22:39:26.736Z>",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "Component Design Guidelines",
-          "description": "Develop guidelines for designing reusable UI components, detailing visual and interactive specifications. Include rules for applying color and typography tokens to components.",
-          "dependencies": [
-            1,
-            2
-          ],
-          "details": "Define component structure, states, and variations. Document how to use design tokens for consistent styling and ensure guidelines are clear for both designers and developers.\n<info added on 2025-06-07T01:43:38.862Z>\nCOMPONENT DESIGN GUIDELINES IMPLEMENTATION COMPLETE:\n\n✅ COMPREHENSIVE COMPONENT FRAMEWORK CREATED:\n- Created src/lib/styles/component-guidelines.md with complete component system\n- Established 4 core principles: Accessibility First, Mobile-First Responsive, Consistent Token Usage, Performance Optimized\n- Defined component categories: Buttons, Cards, Navigation, Forms, Layout, Status/Feedback\n\n✅ DETAILED COMPONENT SPECIFICATIONS:\n- Primary/Secondary/Outline button variants with full state management\n- Service cards and testimonial cards for marketing content\n- Header navigation with responsive mobile patterns\n- Form components (inputs, selects) with accessibility features\n- Section containers with proper typography hierarchy\n- Alert/notification components for user feedback\n- Loading states for better UX\n\n✅ COMPLETE STATE MANAGEMENT:\n- Default, Hover, Focus, Active, Disabled states defined\n- Proper transition animations (duration-200)\n- Accessibility-compliant focus rings\n- Touch-friendly interaction areas (44px minimum)\n\n✅ ACCESSIBILITY FRAMEWORK:\n- WCAG 2.1 AA compliance requirements\n- Keyboard navigation specifications\n- Screen reader compatibility guidelines\n- Color contrast requirements (4.5:1 text, 3:1 UI elements)\n- Touch target specifications\n\n✅ INTEGRATION WITH DESIGN SYSTEM:\n- All components use established color tokens (primary, accent, neutral, feedback)\n- Typography hierarchy integration (display, heading, body text)\n- Consistent spacing and sizing patterns\n- Custom shadows and animations from Tailwind config\n\n✅ DOCUMENTATION & QUALITY STANDARDS:\n- Component documentation template\n- Code commenting standards\n- Performance guidelines\n- Quality checklist for implementation\n- Reusability and modularity requirements\n\nREADY FOR COMPONENT DEVELOPMENT: Complete framework established for building consistent, accessible, high-performance components across the marketing homepage.\n</info added on 2025-06-07T01:43:38.862Z>",
-          "status": "done"
-        },
-        {
-          "id": 4,
-          "title": "Design Token Implementation",
-          "description": "Translate the defined colors, typography, and component styles into design tokens for use in design and development tools. Establish naming conventions and document token usage.",
-          "dependencies": [
-            1,
-            2,
-            3
-          ],
-          "details": "Implement tokens for color, typography, and component properties. Ensure tokens are well-documented, scalable, and follow best practices for naming and organization.\n<info added on 2025-06-07T01:46:21.288Z>\nDESIGN TOKEN IMPLEMENTATION COMPLETE:\n\n✅ COMPREHENSIVE TOKEN DOCUMENTATION CREATED:\n- Created src/lib/styles/design-tokens.md with complete token reference\n- Documented all color tokens (primary, accent, neutral, feedback) with full scales\n- Documented typography tokens (font families, sizes, weights) with usage examples\n- Documented spacing, shadow, and animation tokens\n\n✅ TOKEN NAMING CONVENTIONS ESTABLISHED:\n- Color pattern: {category}-{weight} (primary-600, accent-500, neutral-900)\n- Typography pattern: text-{size}, font-{weight}, font-{family}\n- Spacing pattern: {property}-{size} (p-6, m-4, space-y-8)\n- Component pattern: {element}-{variant}-{state}\n\n✅ USAGE PATTERNS DOCUMENTED:\n- Button token combinations for primary/secondary/outline variants\n- Card token patterns with proper shadows and spacing\n- Section layout patterns with typography hierarchy\n- Form input patterns with focus states and accessibility\n\n✅ INTEGRATION GUIDELINES PROVIDED:\n- Tailwind CSS utility class mapping for all tokens\n- Component documentation template with token usage\n- Token testing checklist for accessibility and consistency\n- Design tool integration patterns (Figma, Storybook)\n\n✅ DEVELOPER REFERENCE COMPLETE:\n- Quick reference section with most common tokens\n- Complete usage examples for all token categories\n- Token maintenance and versioning guidelines\n- Integration with existing Tailwind configuration\n\nDESIGN SYSTEM FOUNDATION COMPLETE: All design tokens documented and ready for component development across the marketing homepage. Complete integration with Tailwind CSS configuration provides consistent, scalable design system.\n</info added on 2025-06-07T01:46:21.288Z>",
-          "status": "done"
-        }
-      ]
+      "dependencies": [
+        1
+      ],
+      "status": "pending",
+      "subtasks": []
     },
     {
       "id": 3,
-      "title": "Develop Core Layout Structure",
-      "description": "Create the basic layout structure, including navigation, footer, and a responsive grid system, ensuring mobile-first design principles.",
-      "details": "",
-      "testStrategy": "",
+      "title": "Create User Login Page (`/login`)",
+      "description": "Develop the `/login` page with a form for users to input their email and password. Implement the logic to authenticate users using the Pocketbase SDK and manage their session.",
+      "details": "Create a SvelteKit route for `/login`. Implement a form with input fields for `email` and `password`. Include a link to the password reset page (`/forgot-password`). On submission, call `pb.collection('users').authWithPassword(email, password)`. Upon successful login, redirect to the homepage. The global auth store should update automatically. Implement client-side validation for required fields. Ensure the page is responsive and visually consistent.",
+      "testStrategy": "Test successful login with credentials of a user created in Task 2. Verify redirection to homepage and auth store updates. Test login with invalid credentials (wrong password, non-existent email) and verify appropriate error messages (from Task 4) are shown. Verify the 'Forgot Password?' link navigates correctly.",
       "priority": "high",
-      "dependencies": [],
-      "status": "done",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Responsive grid system implementation",
-          "description": "Implement a responsive grid layout using Svelte-grid or Svelte-grid-responsive",
-          "dependencies": [],
-          "details": "Choose between Svelte-grid (draggable/resizable grid with responsive breakpoints) or Svelte-grid-responsive (Bootstrap-based grid system). Install the chosen package, set up responsive breakpoints, and implement the basic grid structure for the application layout.\n<info added on 2025-06-07T02:26:16.718Z>\n## Exploration Phase Completed\n\n**Current Project Analysis:**\n- SvelteKit project with Svelte 5.0.0\n- Tailwind CSS v4.0.0 already configured and working\n- TypeScript enabled\n- Bun as package manager\n- Basic layout exists in src/routes/+layout.svelte (minimal)\n- Custom CSS utilities already defined for buttons, cards, containers\n- Current page has basic content but no grid structure\n\n**Implementation Decision:**\nRather than adding svelte-grid or svelte-grid-responsive as external dependencies, we should leverage Tailwind CSS v4's excellent built-in grid system. This approach is:\n- More lightweight (no additional dependencies)\n- Consistent with existing Tailwind setup\n- Provides excellent responsive capabilities\n- Industry standard approach\n\n**Implementation Plan:**\n1. Create a reusable Grid component using Tailwind CSS grid utilities\n2. Set up responsive breakpoints and grid configurations\n3. Implement the grid system in the main layout\n4. Create utility classes for common grid patterns\n5. Test responsive behavior across breakpoints\n\n**Next Steps:**\n- Create src/lib/components/Grid.svelte component\n- Update layout to use the new grid system\n- Add responsive grid utilities to app.css\n</info added on 2025-06-07T02:26:16.718Z>\n<info added on 2025-06-07T02:30:05.327Z>\n## Issue Identified: Grid Layout Not Working\n\n**Problem:** Grid components are not rendering properly - items are stacking vertically without spacing instead of displaying in a responsive grid layout.\n\n**Debugging needed:**\n1. Check if Tailwind grid classes are being applied\n2. Verify Grid component functionality\n3. Test CSS output and class generation\n</info added on 2025-06-07T02:30:05.327Z>\n<info added on 2025-06-07T02:32:03.259Z>\n## Issue Resolution Applied ✅\n\n**Root Cause Identified:** Dynamic class generation in Grid component wasn't working with Tailwind CSS's purging system.\n\n**Fixes Applied:**\n1. **Grid.svelte Component Fixed:**\n   - Replaced dynamic string interpolation (`grid-cols-${cols.sm}`) with explicit class mappings\n   - Added proper TypeScript typing with `Record<number, string>` \n   - Now uses explicit class names that Tailwind can detect during build\n\n2. **CSS Classes Added:**\n   - Added explicit grid column classes (.grid-cols-1 through .grid-cols-6)\n   - Added responsive variants (md:, lg:, xl:) for all column counts\n   - Ensures classes are available regardless of dynamic generation\n\n3. **Test Page Created:**\n   - Added hardcoded grid test section (guaranteed to work)\n   - Added Grid component test section (to verify component functionality)\n   - Side-by-side comparison to isolate any remaining issues\n\n**Expected Result:** \n- Hardcoded grid section should now display proper responsive grid layout\n- Grid component should now generate correct classes and display properly\n- Proper spacing and responsive behavior across all breakpoints\n\n**Status:** Fixes applied, ready for testing. The responsive grid system should now be fully functional.\n</info added on 2025-06-07T02:32:03.259Z>\n<info added on 2025-06-07T02:33:11.790Z>\n## Progress Update: Partial Success ✅❌\n\n**What's Working:**\n- Hardcoded grid test shows perfect 4-column responsive layout with spacing\n- CSS classes are correctly available and functional\n- Container and basic layout structure working properly\n\n**Issue Remaining:**\n- Grid component is not applying classes correctly - shows vertical stack instead of grid\n- Component is not generating the expected CSS classes\n\n**Next Steps:**\n- Debug Grid component class generation\n- Inspect actual rendered classes in browser dev tools\n- Fix component logic to match hardcoded implementation\n</info added on 2025-06-07T02:33:11.790Z>\n<info added on 2025-06-07T02:50:46.122Z>\n## ✅ SUBTASK COMPLETED SUCCESSFULLY!\n\n**Final Resolution:**\n- User identified and fixed the `$derived()` syntax issue by using `$derived.by()` instead\n- Grid component now working correctly with proper class generation\n- Both hardcoded and component grid sections displaying identically\n- Responsive grid system fully functional across all breakpoints\n\n**Deliverables Completed:**\n✅ Grid.svelte component with responsive column configuration\n✅ Container.svelte component with responsive padding/sizing  \n✅ Explicit CSS classes for all grid variants (1-6 columns, all breakpoints)\n✅ Mobile-first responsive design principles implemented\n✅ TypeScript interfaces and proper prop handling\n✅ Working grid system using Tailwind CSS utilities\n✅ No external dependencies added (pure Tailwind approach)\n\n**Status:** Responsive grid system implementation COMPLETE and ready for production use.\n</info added on 2025-06-07T02:50:46.122Z>",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "Header/navigation component",
-          "description": "Create a responsive header with navigation elements",
-          "dependencies": [
-            1
-          ],
-          "details": "Develop a header component that integrates with the grid system. Implement navigation elements that adapt to different screen sizes. Ensure the header is properly positioned within the grid layout and maintains consistency across all pages.\n<info added on 2025-06-07T16:37:40.947Z>\n## Starting Header/Navigation Component Implementation\n\n**Task Overview:**\n- Create responsive header with navigation elements  \n- Integrate with existing grid system (Container component)\n- Ensure mobile-first responsive design\n- Position properly within layout structure\n- Maintain consistency across all pages\n\n**Implementation Plan:**\n1. Create Header.svelte component using Container for consistent layout\n2. Implement responsive navigation menu (desktop/mobile variants)\n3. Add mobile hamburger menu functionality\n4. Integrate into main layout (+layout.svelte)\n5. Style with Tailwind CSS following project patterns\n6. Test responsive behavior across breakpoints\n\n**Starting implementation...**\n</info added on 2025-06-07T16:37:40.947Z>\n<info added on 2025-06-07T16:39:28.705Z>\n## Header/Navigation Component Implementation COMPLETE! ✅\n\n**Components Created:**\n1. **Header.svelte** - Comprehensive responsive header component with:\n   - Logo/brand area with \"Code-Sub\" branding\n   - Desktop navigation menu (Home, Services, About, Contact)\n   - Mobile hamburger menu with smooth toggle animation\n   - Primary CTA buttons (\"Get Started\")\n   - Sticky positioning (top-0 z-50)\n   - Accessibility features (aria-labels, focus states)\n\n**Integration Completed:**\n- ✅ Uses Container component for consistent layout/padding\n- ✅ Exported from lib components system\n- ✅ Integrated into main +layout.svelte \n- ✅ Applied to all pages via layout inheritance\n\n**Responsive Features:**\n- ✅ Mobile-first design principles\n- ✅ Desktop navigation (hidden on mobile)\n- ✅ Mobile menu (hamburger icon, slide-down menu)\n- ✅ Responsive logo (full name hidden on small screens)\n- ✅ Touch-friendly button sizes\n- ✅ Smooth transitions and hover states\n\n**Page Layout Enhanced:**\n- Updated +layout.svelte with proper structure\n- Improved homepage with Hero, Services, and CTA sections\n- Demonstrating Grid component usage in realistic context\n- Professional styling with consistent design system\n\n**Status:** Header/navigation component fully functional and production-ready!\n</info added on 2025-06-07T16:39:28.705Z>\n<info added on 2025-06-07T16:41:05.264Z>\n## Layout Padding Issue Identified\n\n**Problem:** Content extends to browser window edges without outer padding/margin, creating a cramped appearance.\n\n**Solution:** Add responsive padding to main layout wrapper while preserving full-width design elements where appropriate.\n\n**Implementing fix...**\n</info added on 2025-06-07T16:41:05.264Z>",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "Footer component",
-          "description": "Design and implement a responsive footer component",
-          "dependencies": [
-            1
-          ],
-          "details": "Create a footer component that works with the grid system. Include necessary content sections (links, copyright, contact info) and ensure it responds appropriately to different screen sizes and maintains proper positioning at the bottom of the layout.\n<info added on 2025-06-07T16:48:13.921Z>\n**Task Overview:**\n- Create responsive footer component with multiple content sections\n- Integrate with existing Grid/Container system for consistency  \n- Include links, contact info, copyright sections\n- Match header padding patterns and responsive behavior\n- Position at bottom of layout structure\n\n**Implementation Plan:**\n1. Create Footer.svelte component with consistent padding approach\n2. Implement responsive grid layout for footer sections\n3. Add footer content (navigation links, contact, social, copyright)\n4. Export component and integrate into main layout\n5. Style with Tailwind CSS following project patterns\n6. Test responsive behavior and positioning\n\n**Starting implementation...**\n</info added on 2025-06-07T16:48:13.921Z>\n<info added on 2025-06-07T16:52:11.928Z>\n## Footer Layout Issue RESOLVED ✅\n\n**Problem:** \"Legal\" column was wrapping to new line instead of staying next to \"Resources\"\n\n**Solution Applied:**\n- Changed from Grid component to direct Tailwind CSS grid for more control\n- Adjusted grid layout: `grid-cols-1 md:grid-cols-2 lg:grid-cols-6`\n- Company info section spans 2 columns on desktop (`lg:col-span-2`)\n- Remaining 4 columns accommodate all navigation sections in one row\n- This ensures Legal stays next to Resources without wrapping\n\n**Final Layout Structure:**\n- Mobile: Single column (everything stacked)\n- Tablet: 2 columns (company info spans 2, navigation sections stack)\n- Desktop: 6 columns (company info: 2 cols, navigation: 4 cols = 1 each)\n\n**Status:** Footer component layout optimized and fully functional!\n</info added on 2025-06-07T16:52:11.928Z>",
-          "status": "done"
-        },
-        {
-          "id": 4,
-          "title": "Mobile-first layout adaptation",
-          "description": "Refine the layout for mobile devices and implement responsive behavior",
-          "dependencies": [
-            1,
-            2,
-            3
-          ],
-          "details": "Apply mobile-first principles to the existing components. Test and adjust breakpoints for various device sizes. Implement any necessary conditional rendering or component variations based on screen size. Ensure smooth transitions between different viewport sizes.\n<info added on 2025-06-07T16:56:58.411Z>\nStarting Mobile-First Layout Adaptation\n\n**Task Overview:**\n- Refine and optimize mobile experience across all components\n- Ensure consistent responsive behavior and breakpoints\n- Test layout adaptation across different device sizes\n- Add missing mobile-specific optimizations\n- Improve transitions between viewport sizes\n\n**Current State Analysis:**\n✅ Grid system - Already mobile-first with responsive breakpoints\n✅ Header - Has mobile hamburger menu and responsive behavior  \n✅ Footer - Responsive grid layout with mobile stacking\n✅ Container - Responsive padding system\n✅ Page layout - Basic responsive structure\n\n**Optimization Plan:**\n1. Review and standardize breakpoints across components\n2. Enhance mobile navigation experience\n3. Optimize typography and spacing for mobile\n4. Add smooth transitions and animations\n5. Test and refine across multiple device sizes\n6. Ensure touch-friendly interactions\n\n**Starting systematic review and optimization...**\n</info added on 2025-06-07T16:56:58.411Z>\n<info added on 2025-06-07T16:59:43.490Z>\n## Mobile-First Layout Adaptation COMPLETE! ✅\n\n**Mobile Optimizations Applied:**\n\n1. **Enhanced Header/Navigation:**\n   - Improved mobile menu animations and transitions\n   - Added shadow and background to mobile menu for better visibility\n   - Enhanced mobile menu UX with smooth animations\n\n2. **Typography & Spacing Optimization:**\n   - Progressive text scaling: text-3xl → sm:text-4xl → md:text-5xl → lg:text-6xl\n   - Improved line-height and spacing (leading-tight, leading-relaxed)\n   - Responsive margin/padding adjustments for better mobile density\n\n3. **Touch-Friendly Button Design:**\n   - Minimum 44px height for accessibility compliance\n   - Full-width buttons on mobile, auto-width on larger screens\n   - Enhanced tap targets and touch feedback\n   - Disabled text selection for better touch interaction\n\n4. **Mobile-Specific CSS Enhancements:**\n   - Added touch-scrolling support (-webkit-overflow-scrolling: touch)\n   - Implemented 44px minimum touch targets for all interactive elements\n   - Enhanced navigation padding on mobile (12px 16px)\n   - Added smooth transitions with reduced motion support\n   - Safe area inset handling for modern mobile devices\n\n5. **Responsive Layout Improvements:**\n   - Progressive section padding: py-12 → sm:py-16 → lg:py-24\n   - Better button layout with flex centering and proper spacing\n   - Optimized CTA section with constrained button width on mobile\n   - Enhanced Grid component with mobile scroll optimizations\n\n6. **Breakpoint Standardization:**\n   - Consistent use of sm: (640px), md: (768px), lg: (1024px) breakpoints\n   - Progressive enhancement approach throughout\n   - Mobile-first CSS with desktop enhancement\n\n**Mobile UX Features:**\n✅ Touch-friendly 44px minimum interactive elements\n✅ Smooth scrolling and enhanced transitions  \n✅ Proper viewport configuration in app.html\n✅ Reduced motion preference support\n✅ Safe area inset handling for iOS devices\n✅ Full-width buttons on mobile with proper spacing\n✅ Optimized typography scaling across devices\n✅ Enhanced mobile navigation experience\n\n**Status:** Mobile-first layout adaptation fully implemented and optimized!\n</info added on 2025-06-07T16:59:43.490Z>",
-          "status": "done"
-        }
-      ]
+      "dependencies": [
+        1
+      ],
+      "status": "pending",
+      "subtasks": []
     },
     {
       "id": 4,
-      "title": "Plan Content Architecture",
-      "description": "Define the information hierarchy, write compelling copy, and select appropriate images for each section of the homepage.",
-      "details": "",
-      "testStrategy": "",
-      "priority": "high",
-      "dependencies": [],
-      "status": "done",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Define Information Hierarchy",
-          "description": "Create a logical structure for the Code-Sub website content that guides visitors through the conversion funnel",
-          "dependencies": [],
-          "details": "Establish a user-centric information hierarchy that organizes content in a clear, logical structure. Map out the primary navigation paths, determine content priority for each section, and create a sitemap showing relationships between pages. Ensure the structure supports the visitor journey from awareness to decision-making with minimal clicks.\n<info added on 2025-06-07T17:02:40.442Z>\n## Starting Information Hierarchy Definition\n\n**Current State Analysis:**\n✅ Homepage structure exists with: Header (nav), Hero, Services, CTA sections, Footer\n✅ Responsive layout foundation complete\n✅ Business focus: Web development agency \"Code-Sub\"\n✅ Target audience: Business owners & entrepreneurs\n\n**Information Architecture Planning:**\n\n### 1. PRIMARY USER JOURNEY MAPPING\n**Goal:** Guide visitors from problem awareness → solution understanding → trust building → conversion\n\n**Journey Stages:**\n1. **Awareness** (Landing) → Recognize web development needs\n2. **Interest** (Services) → Understand solutions available  \n3. **Consideration** (About/Portfolio) → Evaluate Code-Sub capabilities\n4. **Trust** (Testimonials/Social Proof) → Build confidence in choice\n5. **Action** (Contact/CTA) → Convert to client inquiry\n\n### 2. CONTENT PRIORITY HIERARCHY\n**Primary Content (Above fold):**\n- Value proposition headline\n- Primary CTA (Get Started)\n- Core service overview\n\n**Secondary Content (Immediate scroll):**\n- Detailed services breakdown\n- Key benefits/differentiators\n- Secondary CTA (Learn More)\n\n**Supporting Content (Lower priority):**\n- About/credentials\n- Testimonials\n- FAQ\n- Contact details\n\n### 3. NAVIGATION STRUCTURE\n**Primary Nav:** Home | Services | About | Contact\n**CTA Buttons:** \"Get Started Today\" (primary), \"View Services\" (secondary)\n\n**Starting detailed wireframe and content mapping...**\n</info added on 2025-06-07T17:02:40.442Z>\n<info added on 2025-06-07T17:03:10.675Z>\n## COMPLETE INFORMATION HIERARCHY DEFINED ✅\n\n### 📊 DETAILED HOMEPAGE CONTENT MAP\n\n**SECTION 1: HERO/BANNER (Above Fold)**\n```\nPriority: CRITICAL\nGoal: Capture attention + establish value proposition\nContent Order:\n1. Main Headline (Problem/Solution focused)\n2. Supporting Subheadline (Benefit/Outcome focused)  \n3. Primary CTA Button (\"Get Started Today\")\n4. Secondary CTA Button (\"View Services\")\n5. Trust Signal (e.g., \"Trusted by 100+ businesses\")\n```\n\n**SECTION 2: SERVICES OVERVIEW (Primary Scroll)**\n```\nPriority: HIGH\nGoal: Demonstrate solution breadth + expertise\nContent Order:\n1. Section Headline (\"Our Services\")\n2. Intro Paragraph (Value summary)\n3. Service Cards (3-4 core services):\n   - Web Development\n   - E-commerce Solutions  \n   - Website Maintenance\n   - SEO & Performance\n4. CTA: \"Learn More About Our Services\"\n```\n\n**SECTION 3: VALUE PROPOSITION (Trust Building)**\n```\nPriority: HIGH\nGoal: Differentiate from competitors\nContent Order:\n1. Headline (\"Why Choose Code-Sub?\")\n2. 3-Column Benefits:\n   - Expert Development Team\n   - Results-Driven Approach\n   - Ongoing Support & Maintenance\n3. Supporting details for each benefit\n```\n\n**SECTION 4: SOCIAL PROOF (Credibility)**\n```\nPriority: MEDIUM-HIGH\nGoal: Build trust and credibility\nContent Order:\n1. Headline (\"What Our Clients Say\")\n2. 2-3 Customer Testimonials\n3. Client logos (if available)\n4. Success metrics/stats\n```\n\n**SECTION 5: FAQ (Objection Handling)**\n```\nPriority: MEDIUM\nGoal: Address common concerns\nContent Order:\n1. Headline (\"Frequently Asked Questions\")\n2. 4-6 Key Questions:\n   - Pricing/Investment\n   - Timeline/Process\n   - Support/Maintenance\n   - Technology Stack\n```\n\n**SECTION 6: FINAL CTA (Conversion)**\n```\nPriority: CRITICAL\nGoal: Drive final conversion action\nContent Order:\n1. Compelling Headline (\"Ready to Get Started?\")\n2. Final value statement\n3. Primary CTA Button\n4. Contact information\n```\n\n### 🗺️ SITE NAVIGATION ARCHITECTURE\n\n**HEADER NAVIGATION:**\n- Logo (Home link)\n- Services (dropdown with service categories)\n- About (company story/team)\n- Contact (multiple contact methods)\n- CTA Button (\"Get Started\")\n\n**FOOTER NAVIGATION:**\n- Services (full service list)\n- Company (About, Team, Careers)\n- Resources (Blog, FAQ, Support)\n- Legal (Privacy, Terms, Cookies)\n- Contact & Social Links\n\n### 📱 MOBILE-FIRST CONSIDERATIONS\n\n**Mobile Priority Stack:**\n1. Value Proposition (simplified)\n2. Primary CTA\n3. Core Services (condensed)\n4. Trust Signals\n5. Contact CTA\n\n**Desktop Enhancement:**\n- Side-by-side layouts\n- Extended descriptions\n- Additional trust elements\n- More detailed service breakdowns\n\n### 🎯 CONVERSION FLOW OPTIMIZATION\n\n**Primary Conversion Path:**\nHomepage Hero → Services → Trust Building → Contact Form\n\n**Secondary Paths:**\n- Services Page → Portfolio → Contact\n- About Page → Services → Contact\n- Blog/Resources → Services → Contact\n\n**Exit Intent Prevention:**\n- Multiple CTA placements\n- Value reinforcement throughout\n- FAQ to handle objections\n- Easy contact options\n\n### ✅ SUCCESS METRICS FOR HIERARCHY\n\n**Engagement Metrics:**\n- Time on page > 2 minutes\n- Scroll depth > 75%\n- Click-through rate on CTAs > 3%\n\n**Conversion Metrics:**\n- Contact form submissions\n- Phone calls generated\n- Service page visits\n- Reduced bounce rate\n\n**Information hierarchy definition COMPLETE!** Ready for messaging framework development.\n</info added on 2025-06-07T17:03:10.675Z>",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "Develop Core Messaging Framework",
-          "description": "Create the foundational messaging that will guide all website copy creation",
-          "dependencies": [
-            1
-          ],
-          "details": "Develop a comprehensive messaging framework including unique value proposition, brand voice guidelines, key benefits, and primary CTAs. Define the core message for each website section that aligns with business goals and resonates with the target audience of business owners and entrepreneurs.\n<info added on 2025-06-07T17:03:45.980Z>\n**Building on Information Hierarchy:**\n✅ User journey mapped: Awareness → Interest → Consideration → Trust → Action\n✅ Content priorities defined with 6 key sections\n✅ Conversion flow optimized for business owner audience\n\n**Core Messaging Development Plan:**\n\n### 1. TARGET AUDIENCE DEFINITION\n**Primary:** Business owners & entrepreneurs (25-55 years)\n- Need professional online presence\n- Value efficiency and results\n- Want to focus on their business, not technical details\n- Budget-conscious but quality-focused\n- Time-poor, decision-makers\n\n**Pain Points:**\n- Outdated or non-existent website hurting business\n- Technical complexity overwhelms them\n- Poor performance/slow sites losing customers\n- Lack ongoing maintenance and support\n- DIY solutions look unprofessional\n\n### 2. COMPETITIVE POSITIONING\n**Code-Sub's Unique Value:**\n- Personal, partnership approach (not just vendor)\n- Results-focused development (business growth)\n- Ongoing support & maintenance included\n- Small business specialist (understand their needs)\n- Modern, performance-optimized solutions\n\n### 3. BRAND VOICE GUIDELINES\n**Tone:** Professional but approachable, confident without arrogance\n**Style:** Clear, benefit-focused, jargon-free\n**Personality:** Trusted advisor, reliable partner, growth enabler\n\n**Starting detailed messaging framework development...**\n</info added on 2025-06-07T17:03:45.980Z>\n<info added on 2025-06-07T17:04:24.591Z>\n## COMPREHENSIVE CORE MESSAGING FRAMEWORK ✅\n\n### 🎯 PRIMARY VALUE PROPOSITION\n**Core Message:** \"We build professional websites that grow your business while you focus on what you do best.\"\n\n**Supporting Value Props:**\n- \"Partnership-driven web development for business growth\"\n- \"Professional websites with ongoing support included\" \n- \"Transform your online presence into a powerful business tool\"\n\n### 📝 SECTION-SPECIFIC MESSAGING\n\n**HERO SECTION MESSAGING:**\n```\nHeadlines (A/B Test Options):\n1. \"Professional Web Development That Grows Your Business\"\n2. \"Build Your Online Presence. Focus on Your Business.\"\n3. \"Websites That Work As Hard As You Do\"\n\nSubheadlines:\n1. \"We partner with businesses to create professional websites that drive results and growth. Build your online presence with our expert development team.\"\n2. \"Professional web development and ongoing support, so you can focus on running your business while we handle your online growth.\"\n3. \"From concept to launch to long-term success - we're your dedicated web development partner.\"\n\nPrimary CTA: \"Get Started Today\"\nSecondary CTA: \"View Our Services\"\n```\n\n**SERVICES SECTION MESSAGING:**\n```\nHeadline: \"Comprehensive Web Solutions\"\nIntro: \"Everything you need to establish and grow your online presence\"\n\nService Messages:\n1. Web Development → \"Custom websites built for your business goals\"\n2. E-commerce Solutions → \"Online stores that convert visitors to customers\"  \n3. Website Maintenance → \"Keep your site secure, fast, and up-to-date\"\n4. SEO & Performance → \"Get found online and keep visitors engaged\"\n```\n\n**VALUE PROPOSITION SECTION:**\n```\nHeadline: \"Why Choose Code-Sub?\"\n\nBenefits Framework:\n1. Expert Development Team\n   - Message: \"Experienced developers who understand business needs\"\n   - Details: \"Our team combines technical expertise with business acumen\"\n\n2. Results-Driven Approach  \n   - Message: \"We measure success by your business growth\"\n   - Details: \"Every decision is made with your ROI in mind\"\n\n3. Ongoing Partnership\n   - Message: \"We're here for the long term, not just the launch\"\n   - Details: \"Maintenance, updates, and growth support included\"\n```\n\n**SOCIAL PROOF MESSAGING:**\n```\nHeadline: \"Trusted by Growing Businesses\"\nSubline: \"See what our clients say about working with Code-Sub\"\n\nTestimonial Framework:\n- Problem → Solution → Result format\n- Focus on business outcomes, not technical details\n- Include measurable results when possible\n```\n\n**FAQ MESSAGING:**\n```\nHeadline: \"Everything You Need to Know\"\n\nKey Questions:\n1. \"What's included in your web development service?\"\n2. \"How long does it take to build a website?\"\n3. \"Do you provide ongoing support and maintenance?\"\n4. \"What technologies do you use?\"\n5. \"How much does a professional website cost?\"\n6. \"Can you help with SEO and online marketing?\"\n```\n\n### 🎯 CTA MESSAGING STRATEGY\n\n**Primary CTAs (High Commitment):**\n- \"Get Started Today\"\n- \"Start Your Project\"\n- \"Schedule a Consultation\"\n- \"Let's Build Your Website\"\n\n**Secondary CTAs (Low Commitment):**\n- \"View Our Services\"\n- \"See Our Work\" \n- \"Learn More\"\n- \"Download Our Guide\"\n\n**Urgency/Scarcity (When Appropriate):**\n- \"Limited Spots Available\"\n- \"Book Your Free Consultation\"\n- \"Get Your Quote Today\"\n\n### 🗣️ BRAND VOICE EXAMPLES\n\n**Professional but Approachable:**\n❌ \"Utilize our cutting-edge technological solutions\"\n✅ \"We use modern technology to build websites that work\"\n\n**Benefit-Focused:**\n❌ \"We code in React, Node.js, and PostgreSQL\"\n✅ \"We build fast, secure websites that grow with your business\"\n\n**Partnership Language:**\n❌ \"We deliver websites to clients\"\n✅ \"We partner with businesses to build their online presence\"\n\n### 🎪 EMOTIONAL MESSAGING HOOKS\n\n**Fear-Based (Use Sparingly):**\n- \"Don't let an outdated website hurt your business\"\n- \"Your competitors are getting ahead online\"\n\n**Aspiration-Based (Primary Focus):**\n- \"Imagine having a website that actually grows your business\"\n- \"Picture the confidence of a professional online presence\"\n\n**Trust-Based:**\n- \"Join the businesses already growing with Code-Sub\"\n- \"Proven web development expertise you can rely on\"\n\n### ✅ MESSAGING SUCCESS CRITERIA\n\n**Clarity Test:** Can a 12-year-old understand the benefit?\n**Relevance Test:** Does it address specific pain points?\n**Differentiation Test:** Is it unique to Code-Sub?\n**Action Test:** Does it encourage the next step?\n\n**Core messaging framework COMPLETE!** Ready for detailed copy writing phase.\n</info added on 2025-06-07T17:04:24.591Z>",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "Write and Review Website Copy",
-          "description": "Create compelling, conversion-focused copy for all homepage sections",
-          "dependencies": [
-            2
-          ],
-          "details": "Write persuasive copy for each section including hero headline/subheadline, service descriptions with benefits, value proposition statements, FAQ content, and strong CTAs. Ensure all copy maintains consistent voice, emphasizes benefits over features, and guides visitors toward conversion actions. Include SEO-optimized content and review for clarity and impact.\n<info added on 2025-06-07T17:05:01.749Z>\nStarting Website Copy Development\n\n**Building on Completed Work:**\n✅ Information hierarchy with 6 key sections defined\n✅ Core messaging framework with value props, CTAs, and brand voice\n✅ Target audience: Business owners & entrepreneurs \n✅ Conversion-focused structure: Awareness → Trust → Action\n\n**Copy Writing Plan:**\n\n### PHASE 1: HERO SECTION COPY\nUsing primary value proposition and testing multiple headline variations for maximum impact.\n\n### PHASE 2: SERVICES SECTION COPY  \nConverting service benefits into compelling descriptions that focus on business outcomes.\n\n### PHASE 3: VALUE PROPOSITION COPY\nExpanding the \"Why Choose Code-Sub?\" messaging into detailed copy.\n\n### PHASE 4: SUPPORTING SECTIONS\nCreating copy for social proof, FAQ, and final CTA sections.\n\n### PHASE 5: REVIEW & OPTIMIZATION\nTesting copy against success criteria (clarity, relevance, differentiation, action).\n\n**Starting with hero section copy development...**\n</info added on 2025-06-07T17:05:01.749Z>\n<info added on 2025-06-07T17:05:41.795Z>\n## COMPLETE WEBSITE COPY - READY FOR IMPLEMENTATION ✅\n\n### 🚀 HERO SECTION COPY (FINAL)\n\n**Main Headline:** \n\"Professional Web Development That Grows Your Business\"\n\n**Subheadline:**\n\"We partner with businesses to create professional websites that drive results and growth. Build your online presence with our expert development team.\"\n\n**Trust Signal:**\n\"Trusted by growing businesses nationwide\"\n\n**Primary CTA:** \"Get Started Today\"  \n**Secondary CTA:** \"View Our Services\"\n\n---\n\n### 🛠️ SERVICES SECTION COPY (FINAL)\n\n**Section Headline:** \"Comprehensive Web Solutions\"\n**Intro Paragraph:** \"Everything you need to establish and grow your online presence\"\n\n**Service 1: Custom Web Development**\nTitle: \"Custom Web Development\"\nDescription: \"Professional websites built specifically for your business goals. Modern, fast, and designed to convert visitors into customers.\"\nIcon: 🌐\n\n**Service 2: E-commerce Solutions**  \nTitle: \"E-commerce Solutions\"\nDescription: \"Complete online stores that make selling easy. From product catalogs to secure checkout, we handle the technical details.\"\nIcon: 🛒\n\n**Service 3: Website Maintenance**\nTitle: \"Ongoing Maintenance & Support\"  \nDescription: \"Keep your site secure, fast, and up-to-date. Regular backups, security updates, and performance optimization included.\"\nIcon: ⚙️\n\n**Service 4: SEO & Performance**\nTitle: \"SEO & Performance Optimization\"\nDescription: \"Get found online and keep visitors engaged. Fast loading times, search engine optimization, and mobile-first design.\"\nIcon: 📈\n\n**Section CTA:** \"Learn More About Our Services\"\n\n---\n\n### 💎 VALUE PROPOSITION SECTION COPY (FINAL)\n\n**Section Headline:** \"Why Choose Code-Sub?\"\n\n**Benefit 1: Expert Development Team**\nTitle: \"Expert Development Team\"\nDescription: \"Our experienced developers combine technical expertise with business understanding. We speak your language, not just code.\"\n\n**Benefit 2: Results-Driven Approach**\nTitle: \"Results-Driven Approach\"  \nDescription: \"We measure success by your business growth. Every design decision and technical choice is made with your ROI in mind.\"\n\n**Benefit 3: Ongoing Partnership**\nTitle: \"Long-Term Partnership\"\nDescription: \"We're here for the long haul, not just the launch. Ongoing support, updates, and growth strategies are part of our commitment.\"\n\n---\n\n### 💬 SOCIAL PROOF SECTION COPY (FINAL)\n\n**Section Headline:** \"What Our Clients Say\"\n**Subheadline:** \"See how Code-Sub has helped businesses grow their online presence\"\n\n**Testimonial 1:**\n\"Code-Sub completely transformed our online presence. Our new website not only looks professional but has increased our leads by 40% in just three months.\"\n— Sarah Johnson, Owner, Green Valley Landscaping\n\n**Testimonial 2:**  \n\"The team at Code-Sub made the whole process seamless. They understood our business from day one and delivered exactly what we needed to grow online.\"\n— Mike Chen, Founder, Tech Solutions Plus\n\n**Testimonial 3:**\n\"Finally, a web development company that actually cares about our business results. The ongoing support has been invaluable for our growth.\"\n— Lisa Rodriguez, CEO, Creative Marketing Co.\n\n**Stats:**\n• 95% Client Satisfaction Rate\n• 200+ Websites Launched\n• 50+ Ongoing Partnerships\n\n---\n\n### ❓ FAQ SECTION COPY (FINAL)\n\n**Section Headline:** \"Frequently Asked Questions\"\n**Subheadline:** \"Everything you need to know about working with Code-Sub\"\n\n**Q1: What's included in your web development service?**\nA: Complete website design and development, responsive mobile optimization, basic SEO setup, content management system, and 30 days of launch support. Ongoing maintenance plans are available separately.\n\n**Q2: How long does it take to build a website?**\nA: Most websites are completed within 4-8 weeks, depending on complexity and content requirements. We'll provide a detailed timeline during your initial consultation.\n\n**Q3: Do you provide ongoing support and maintenance?**\nA: Yes! We offer comprehensive maintenance plans that include security updates, backups, performance monitoring, and content updates. Many clients choose our ongoing partnership approach.\n\n**Q4: What technologies do you use?**\nA: We use modern, reliable technologies including React, SvelteKit, Node.js, and other industry-standard tools. We choose the best technology for your specific needs and goals.\n\n**Q5: How much does a professional website cost?**\nA: Investment typically ranges from $3,000-$15,000 depending on features and complexity. We provide detailed quotes after understanding your specific requirements during a free consultation.\n\n**Q6: Can you help with SEO and online marketing?**\nA: Absolutely! We include basic SEO optimization with every website and offer advanced SEO and digital marketing services to help grow your online presence.\n\n---\n\n### 🎯 FINAL CTA SECTION COPY (FINAL)\n\n**Section Headline:** \"Ready to Transform Your Online Presence?\"\n**Supporting Text:** \"Join the businesses already growing with Code-Sub. Let's discuss your project and build something amazing together.\"\n\n**Primary CTA:** \"Get Started Today\"\n**Secondary Options:**\n- \"Schedule Free Consultation\" \n- \"Get Your Quote\"\n- \"Call (555) 123-CODE\"\n\n**Contact Information:**\nEmail: hello@code-sub.com\nPhone: (555) 123-CODE\nBusiness Hours: Mon-Fri 9AM-6PM EST\n\n---\n\n### ✅ COPY REVIEW & QUALITY CHECK\n\n**Clarity Test:** ✅ Language is clear and jargon-free\n**Relevance Test:** ✅ Addresses business owner pain points  \n**Differentiation Test:** ✅ Emphasizes partnership approach\n**Action Test:** ✅ Multiple clear CTAs throughout\n**SEO Test:** ✅ Includes relevant keywords naturally\n**Voice Test:** ✅ Professional but approachable tone\n**Benefit Focus:** ✅ Features translated to business benefits\n\n**WEBSITE COPY COMPLETE AND READY FOR IMPLEMENTATION!**\n\nAll copy follows the established messaging framework, maintains consistent voice, and guides visitors through the conversion funnel from awareness to action.\n</info added on 2025-06-07T17:05:41.795Z>",
-          "status": "done"
-        },
-        {
-          "id": 4,
-          "title": "Define Image Strategy and Requirements",
-          "description": "Create specifications for visual assets that support the content narrative",
-          "dependencies": [
-            1,
-            2
-          ],
-          "details": "Develop an image strategy that complements the messaging framework. Create detailed requirements for each section including image types, styles, dimensions, and content guidelines. Ensure visual assets will enhance the narrative, appeal to the target audience, and support conversion goals.\n<info added on 2025-06-07T17:07:27.568Z>\n## COMPREHENSIVE IMAGE STRATEGY & REQUIREMENTS ✅\n\n### 🎨 VISUAL BRAND IDENTITY\n\n**Brand Aesthetic:**\n- Professional yet approachable\n- Modern, clean design elements  \n- Trust and credibility focused\n- Business growth and success themes\n- Technology-forward but not intimidating\n\n**Color Palette Alignment:**\n- Primary: Blue tones (trust, stability, technology)\n- Secondary: Gray scale (professionalism)\n- Accent: Green (growth, success)\n- Avoid: Overly bright or playful colors\n\n### 📐 IMAGE SPECIFICATIONS BY SECTION\n\n**HERO SECTION REQUIREMENTS:**\n```\nPurpose: Instant credibility + professional appeal\nImage Type: Hero banner background\nDimensions: 1920x1080px (responsive scaling)\nContent: Professional team workspace or modern office\nStyle: High-quality, well-lit, aspirational\nAlt Text: \"Professional web development team workspace\"\nFallback: Solid gradient background\n```\n\n**SERVICES SECTION REQUIREMENTS:**\n```\nPurpose: Visual representation of each service\nImage Type: Service icons + supporting images\nDimensions: Icons 64x64px, Support images 400x300px\nContent:\n- Web Dev: Modern laptop with clean website design\n- E-commerce: Shopping cart or online store interface  \n- Maintenance: Dashboard or analytics interface\n- SEO: Growth charts or search results\nStyle: Consistent icon style, clean backgrounds\n```\n\n**VALUE PROPOSITION SECTION:**\n```\nPurpose: Reinforce trust and expertise\nImage Type: Team photos + process illustrations\nDimensions: Team photos 300x300px, Process 600x400px\nContent:\n- Expert Team: Professional headshots or team photo\n- Results-Driven: Charts, analytics, success metrics\n- Partnership: Handshake, collaboration imagery\nStyle: Professional, authentic, results-focused\n```\n\n**SOCIAL PROOF SECTION:**\n```\nPurpose: Build credibility through client success\nImage Type: Client logos + testimonial photos\nDimensions: Logos 150x75px, Photos 80x80px circular\nContent:\n- Client company logos (real or placeholder)\n- Professional headshots of testimonial givers\n- Optional: Before/after website screenshots\nStyle: Consistent sizing, professional quality\n```\n\n**FAQ SECTION:**\n```\nPurpose: Support content with helpful visuals\nImage Type: Process illustrations or icons\nDimensions: 200x150px supporting graphics\nContent:\n- Timeline graphics for project process\n- Technology stack visualization\n- Support/maintenance illustrations\nStyle: Simple, informative, brand-consistent\n```\n\n**FINAL CTA SECTION:**\n```\nPurpose: Encourage action with compelling visual\nImage Type: Contact/action-oriented imagery\nDimensions: 600x400px or background pattern\nContent:\n- Professional handshake or meeting\n- Modern office or workspace\n- Success/growth metaphors\nStyle: Action-oriented, professional, welcoming\n```\n\n### 🖼️ IMAGE SOURCING STRATEGY\n\n**Option 1: Stock Photography**\n```\nRecommended Sources:\n- Unsplash (free, high-quality)\n- Pexels (free, business-focused collection)\n- Getty Images (premium, if budget allows)\n\nSearch Terms:\n- \"Professional office workspace\"\n- \"Business team meeting\"\n- \"Modern web development\"\n- \"Digital marketing success\"\n- \"Business growth charts\"\n```\n\n**Option 2: Custom Photography**\n```\nIf Available:\n- Team photos (authentic, professional)\n- Office/workspace shots\n- Process documentation\n- Client interaction moments\n\nBenefits:\n- Authentic brand representation\n- Unique visual identity\n- Better conversion potential\n```\n\n**Option 3: Illustration/Graphics**\n```\nFor Technical Content:\n- Service process flows\n- Technology stack diagrams\n- Performance metrics visualization\n- Abstract business concepts\n\nTools:\n- Figma (design creation)\n- Canva (quick graphics)\n- Adobe Creative Suite (professional)\n```\n\n### 📱 RESPONSIVE IMAGE REQUIREMENTS\n\n**Mobile Optimization:**\n```\nHero Images: \n- Mobile: 768x500px optimized version\n- Tablet: 1024x600px version  \n- Desktop: 1920x1080px full resolution\n\nService Images:\n- Single column layout on mobile\n- Larger touch targets for interactive elements\n- Simplified graphics for small screens\n```\n\n**Performance Optimization:**\n```\nFile Formats:\n- WebP (primary, modern browsers)\n- JPEG (fallback, photos)\n- PNG (transparent backgrounds, logos)\n- SVG (icons, simple graphics)\n\nCompression:\n- Hero images: <200KB compressed\n- Service images: <100KB each\n- Icons: <10KB each\n- Total page weight: <2MB including images\n```\n\n### 🎯 CONVERSION-FOCUSED IMAGE SELECTION\n\n**Psychology Considerations:**\n```\nTrust Signals:\n- Professional team photos (competence)\n- Clean, organized workspaces (reliability)\n- Happy clients or success metrics (social proof)\n\nAction Triggers:\n- Forward-moving imagery (progress, growth)\n- Clear visual hierarchy (guides attention)\n- Contrast to highlight CTAs\n```\n\n**A/B Testing Opportunities:**\n```\nHero Section:\n- Team photo vs. workspace vs. abstract\n- Light vs. dark background\n- Single person vs. team imagery\n\nService Section:\n- Icons only vs. icons + photos\n- Illustration style vs. photography\n- Brand colors vs. neutral tones\n```\n\n### 📏 TECHNICAL SPECIFICATIONS\n\n**File Naming Convention:**\n```\nhero-main-1920x1080.webp\nservice-webdev-icon-64x64.svg\nteam-photo-expert-300x300.jpg\nclient-logo-company-150x75.png\n```\n\n**Alt Text Strategy:**\n```\nSEO-Optimized Examples:\n- \"Professional web development team collaborating on business website\"\n- \"Custom web development service icon representing modern coding\"\n- \"Code-Sub client testimonial from satisfied business owner\"\n- \"Website performance analytics showing business growth results\"\n```\n\n**Loading Strategy:**\n```\nPriority Loading:\n1. Hero image (critical, above fold)\n2. Service icons (high priority)\n3. Value prop images (medium priority)\n4. Testimonial photos (lazy load)\n5. FAQ graphics (lazy load)\n```\n\n### ✅ IMAGE QUALITY CHECKLIST\n\n**Technical Quality:**\n- [ ] High resolution (minimum 2x pixel density)\n- [ ] Proper compression for web\n- [ ] Consistent aspect ratios\n- [ ] Professional lighting and composition\n\n**Brand Alignment:**\n- [ ] Matches brand color palette\n- [ ] Supports messaging framework\n- [ ] Appeals to target audience\n- [ ] Reinforces trust and credibility\n\n**Conversion Optimization:**\n- [ ] Supports user journey\n- [ ] Highlights important content\n- [ ] Creates emotional connection\n- [ ] Encourages desired actions\n\n**Accessibility:**\n- [ ] Descriptive alt text provided\n- [ ] Sufficient color contrast\n- [ ] Works without images (graceful degradation)\n- [ ] Screen reader friendly\n\n**IMAGE STRATEGY COMPLETE!** Ready for image selection and optimization phase.\n</info added on 2025-06-07T17:07:27.568Z>",
-          "status": "done"
-        },
-        {
-          "id": 5,
-          "title": "Select and Optimize Images",
-          "description": "Source, select and optimize visual assets for performance and impact",
-          "dependencies": [
-            4
-          ],
-          "details": "Source or create images that match the defined requirements. Select final images for each section that align with brand identity and messaging. Optimize all images for web performance (compression, responsive sizing) while maintaining quality. Ensure all images have appropriate alt text for accessibility and SEO.\n<info added on 2025-06-07T17:08:08.946Z>\n## Starting Image Selection & Optimization\n\n**Building on Image Strategy:**\n✅ Comprehensive visual brand identity defined\n✅ Section-by-section image specifications created\n✅ Technical requirements and optimization guidelines established\n✅ Responsive image strategy planned\n\n**Implementation Plan:**\n\n### PHASE 1: FOLDER STRUCTURE SETUP\nCreate organized directory structure for web-optimized images\n\n### PHASE 2: SPECIFIC IMAGE RECOMMENDATIONS  \nProvide exact Unsplash/Pexels URLs and search terms for each required image\n\n### PHASE 3: OPTIMIZATION GUIDELINES\nDetailed instructions for compressing and formatting images\n\n### PHASE 4: ALT TEXT & SEO\nComplete alt text library for accessibility and SEO\n\n### PHASE 5: IMPLEMENTATION CHECKLIST\nReady-to-use implementation guide for developers\n\n**Starting with folder structure and specific image selections...**\n</info added on 2025-06-07T17:08:08.946Z>\n<info added on 2025-06-07T17:09:35.064Z>\n## COMPLETE IMAGE SELECTION & OPTIMIZATION GUIDE ✅\n\n### 📁 FOLDER STRUCTURE CREATED\n✅ `/static/images/` directory structure established\n✅ Organized by section: hero, services, team, testimonials, clients, faq, cta\n✅ Separate folders for icons and illustrations\n✅ README.md with optimization requirements\n✅ Complete alt-text.md library for SEO and accessibility\n\n### 🖼️ SPECIFIC IMAGE RECOMMENDATIONS\n\n**HERO SECTION - Professional Workspace:**\n```\nUnsplash Search: \"modern office workspace team collaboration\"\nRecommended Images:\n- https://unsplash.com/photos/people-sitting-on-chair-in-front-of-table-while-holding-pens-during-daytime-7RWRM4HlFIE\n- https://unsplash.com/photos/three-people-sitting-in-front-of-table-laptop-with-papers-scattered-g1Kr4Ozfoac\n- https://unsplash.com/photos/business-meeting-in-modern-office-space-SmjF0B9M4pI\n\nRequirements: Professional, well-lit, team collaboration theme\nFormat: WebP, 1920x1080 + responsive versions\n```\n\n**SERVICES SECTION - Custom Icons:**\n```\nIcon Style: Clean, minimalist SVG\nColor Scheme: Blue primary (#2563EB), gray accents\nSize: 64x64px base, scalable SVG\n\nIcon Concepts:\n- Web Development: </> code brackets with globe\n- E-commerce: Shopping cart with digital elements\n- Maintenance: Gear/wrench with upward arrow\n- SEO: Magnifying glass with trending graph\n```\n\n**VALUE PROPOSITION - Team & Results:**\n```\nTeam Photo Search: \"professional development team meeting\"\nRecommended:\n- https://unsplash.com/photos/group-of-people-having-neon-party-QckxruozjRg\n- https://unsplash.com/photos/five-person-by-table-watching-turned-on-white-iMac-3_SvgDspSTE\n\nAnalytics/Results Search: \"business analytics dashboard growth\"\nRecommended:\n- https://unsplash.com/photos/person-using-macbook-pro-on-person-s-lap-m_HRfLhgABo\n- https://unsplash.com/photos/graphs-job-laptop-papers-6dW3xyQyAhw\n```\n\n**TESTIMONIAL PHOTOS:**\n```\nSearch Terms: \"professional business owner portrait\"\nStyle: Professional headshots, diverse representation\nFormat: Square crop (80x80), WebP optimized\nPlaceholder images for development, replace with real client photos when available\n```\n\n### ⚡ OPTIMIZATION WORKFLOW\n\n**Step 1: Download & Resize**\n```bash\n# For each hero image:\n# Desktop: 1920x1080 (original quality)\n# Tablet: 1024x600 (scaled down)\n# Mobile: 768x500 (cropped/scaled)\n\n# Tools: \n# - ImageMagick (command line)\n# - Squoosh.app (web interface)\n# - Photoshop/GIMP (professional)\n```\n\n**Step 2: Compression Settings**\n```\nWebP Settings:\n- Quality: 85% for hero images\n- Quality: 80% for content images  \n- Quality: 90% for testimonial photos\n\nPNG Settings (logos only):\n- 8-bit when possible\n- Transparency optimization\n- TinyPNG compression\n\nSVG Settings:\n- Remove unnecessary metadata\n- Optimize paths and shapes\n- Minify code\n```\n\n**Step 3: Responsive Implementation**\n```html\n<!-- Hero Image Example -->\n<picture>\n  <source media=\"(min-width: 1024px)\" srcset=\"/images/hero/hero-main-1920x1080.webp\">\n  <source media=\"(min-width: 768px)\" srcset=\"/images/hero/hero-main-1024x600.webp\">\n  <img src=\"/images/hero/hero-main-768x500.webp\" \n       alt=\"Professional web development team collaborating on business website design and coding\"\n       loading=\"eager\" />\n</picture>\n\n<!-- Service Icons Example -->\n<img src=\"/images/services/icons/web-development.svg\" \n     alt=\"Custom web development service icon representing modern website creation\"\n     width=\"64\" height=\"64\" />\n```\n\n### 🎨 CUSTOM ICON CREATION GUIDE\n\n**Icon Design Specifications:**\n```\nStyle: Minimal, professional, consistent line weight\nColors: \n- Primary: #2563EB (Blue 600)\n- Secondary: #6B7280 (Gray 500)\n- Accent: #10B981 (Green 500) for positive metrics\n\nSVG Template:\n- 24x24 viewBox for scalability\n- 2px stroke width\n- Rounded line caps\n- No fills (outline style)\n```\n\n**Icon Implementation Code:**\n```svg\n<!-- Web Development Icon -->\n<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n  <polyline points=\"16,18 22,12 16,6\"></polyline>\n  <polyline points=\"8,6 2,12 8,18\"></polyline>\n</svg>\n\n<!-- E-commerce Icon -->\n<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n  <circle cx=\"9\" cy=\"21\" r=\"1\"></circle>\n  <circle cx=\"20\" cy=\"21\" r=\"1\"></circle>\n  <path d=\"m1 1 4 4 2 12 5-1\"></path>\n</svg>\n```\n\n### 📊 PERFORMANCE TARGETS\n\n**Load Time Goals:**\n- Hero image: < 1 second LCP\n- Total page images: < 3 seconds fully loaded\n- Mobile optimization: < 500KB total image weight\n\n**Quality Benchmarks:**\n- Hero images: Visually lossless at 85% WebP\n- Icons: Crisp at all zoom levels (SVG)\n- Testimonials: Professional quality at 80% WebP\n\n### ✅ IMPLEMENTATION CHECKLIST\n\n**Pre-Implementation:**\n- [ ] Download all recommended images\n- [ ] Create responsive versions (3 sizes for hero)\n- [ ] Optimize with target compression settings\n- [ ] Create/source custom SVG icons\n- [ ] Test all images in browser for quality\n\n**During Implementation:**\n- [ ] Use proper alt text from library\n- [ ] Implement lazy loading for below-fold images\n- [ ] Add responsive srcset for hero images\n- [ ] Test loading performance\n- [ ] Verify accessibility with screen readers\n\n**Post-Implementation:**\n- [ ] Run PageSpeed Insights audit\n- [ ] Test on multiple devices and connections\n- [ ] Monitor Core Web Vitals\n- [ ] A/B test hero image variations\n- [ ] Update images based on performance data\n\n### 🚀 READY FOR DEVELOPMENT\n\n**All Image Assets Prepared:**\n✅ Folder structure created with README\n✅ Complete alt text library for SEO/accessibility\n✅ Specific image recommendations with URLs\n✅ Optimization workflow and compression settings\n✅ Custom icon design specifications\n✅ Responsive implementation code examples\n✅ Performance targets and quality benchmarks\n✅ Comprehensive implementation checklist\n\n**IMAGE SELECTION & OPTIMIZATION COMPLETE!**\n\nThe content architecture is now ready for developer implementation with all visual assets planned, sourced, and optimized for maximum performance and conversion impact.\n</info added on 2025-06-07T17:09:35.064Z>",
-          "status": "done"
-        }
-      ]
+      "title": "Implement Basic Error Handling for Authentication Operations",
+      "description": "Add user-friendly error handling for common issues during registration (e.g., email already taken) and login (e.g., invalid credentials), as well as for password reset flows.",
+      "details": "In the `/register` page, catch errors from `pb.collection('users').create()` and display messages like 'Email already in use' or 'Registration failed'. In the `/login` page, catch errors from `pb.collection('users').authWithPassword()` and display 'Invalid email or password'. For password reset (Tasks 6 & 7), handle errors like 'Token invalid/expired' or 'User not found'. Display errors clearly near forms or as notifications, avoiding technical jargon. This task should be integrated during the development of tasks 2, 3, 6, and 7.",
+      "testStrategy": "Trigger known error conditions: register with an existing email, login with incorrect password, use an invalid password reset token. Verify that user-friendly, specific error messages are displayed and the application remains stable.",
+      "priority": "medium",
+      "dependencies": [
+        2,
+        3
+      ],
+      "status": "pending",
+      "subtasks": []
     },
     {
       "id": 5,
-      "title": "Implement Hero Section",
-      "description": "Design and implement the hero section with a compelling headline, value proposition, primary CTA, and hero image to drive conversions.",
-      "details": "",
-      "testStrategy": "",
+      "title": "Update Header Component for Dynamic Auth State",
+      "description": "Modify the `Header.svelte` component to dynamically display different content (e.g., 'Sign In' button vs. user name and 'Logout' button) based on the user's authentication status from the global `authStore`.",
+      "details": "In `Header.svelte`, subscribe to the `isValid` and `currentUser` Svelte stores from Task 1. If `isValid` is true, display the user's name (e.g., `currentUser.name` or `currentUser.email`), a link to an `/account` page, and a 'Logout' button. The 'Logout' button should call `pb.authStore.clear()` and redirect to homepage or update UI accordingly. If `isValid` is false, display 'Sign In' and 'Register' links/buttons. Ensure UI updates reactively to auth state changes.",
+      "testStrategy": "Verify header shows 'Sign In'/'Register' when logged out. Log in (using Task 3 functionality) and verify header updates to show user info, account link, and 'Logout'. Click 'Logout' and verify header reverts to logged-out state and user is logged out in `authStore`.",
       "priority": "high",
-      "dependencies": [],
-      "status": "done",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Hero Component Structure and Styling",
-          "description": "Develop the basic HTML structure and initial Tailwind CSS styling for the hero component in `src/routes/+page.svelte`. Utilize existing Container and Grid components for layout. Focus on mobile-first design.",
-          "dependencies": [],
-          "details": "Implement the basic HTML structure for the hero section, including headline, subheadline, CTAs, and image placeholder. Apply initial Tailwind CSS styling based on the content architecture and design mockups (if available).\n<info added on 2025-06-07T17:16:13.098Z>\nStarting Hero Component Structure & Styling\n\nAnalysis of Existing Code:\n- A basic hero section structure already exists in src/routes/+page.svelte.\n- It has a headline, subheadline, and CTAs.\n- The layout is centered text on a white background.\n\nImplementation Plan:\n1.  Refactor HTML Structure: Modify the existing hero section to support a background image and an overlay for text readability, which aligns with the image strategy from Task 4.\n2.  Add Background Image: Implement a placeholder for the hero background image. This will be a full-width, full-height image behind the text content.\n3.  Create Overlay: Add a dark overlay on top of the image to ensure the white text has enough contrast and is legible.\n4.  Update Styling: Adjust Tailwind CSS classes to handle the new layered structure (background, overlay, text content) using relative and absolute positioning with z-index control.\n5.  Ensure Responsiveness: Maintain the mobile-first design, ensuring the new structure adapts correctly to all screen sizes.\n\nStarting implementation...\n</info added on 2025-06-07T17:16:13.098Z>\n<info added on 2025-06-07T17:17:25.313Z>\nHero Component Structure & Styling Complete\n\nAccomplishments:\nRefactored HTML Structure: The hero section in src/routes/+page.svelte was successfully updated to support a layered design.\nBackground Image Implemented: A placeholder background image has been added, creating a more dynamic and visually engaging hero section.\nOverlay Added: A semi-transparent dark overlay was implemented on top of the image to ensure text contrast and legibility.\nResponsive Styling: The new structure was implemented using Tailwind CSS's responsive utilities, ensuring it adapts correctly to different screen sizes.\nMobile-First Design: The component maintains a mobile-first approach, providing a solid foundation for further refinement.\n\nNext Steps:\nWith the core structure in place, we are now ready to:\nIntegrate the finalized copy from the content architecture.\nAdd the trust signal element.\nImplement responsive image handling with picture and srcset.\nConduct thorough testing across devices.\n\nStatus: The foundational structure and styling for the hero component are now complete.\n</info added on 2025-06-07T17:17:25.313Z>",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "Content Integration and Trust Signal Implementation",
-          "description": "Integrate the finalized hero section copy (headline, subheadline, trust signal) from the content architecture into the hero component. Implement the trust signal display.",
-          "dependencies": [
-            1
-          ],
-          "details": "Replace placeholder text with the actual headline, subheadline, and trust signal. Implement the display of the trust signal, ensuring it aligns with the design and is visually appealing.\n<info added on 2025-06-07T17:18:36.047Z>\nReplace the current placeholder headline and subheadline in src/routes/+page.svelte with the final, approved copy from the content architecture document.\nImplement the \"Trusted by growing businesses nationwide\" trust signal below the CTAs. This involves adding the HTML element and styling it appropriately to be visible but not distracting.\nApply Tailwind CSS classes to the trust signal for appropriate font size, color (e.g., text-gray-300), and spacing.\nEnsure the integrated content is rendered correctly and the trust signal is properly positioned and styled within the hero section.\n</info added on 2025-06-07T17:18:36.047Z>\n<info added on 2025-06-07T17:21:55.017Z>\nContent Integration & Trust Signal Complete.\n\nAccomplishments:\nFinal Copy Integrated: The hero section headline and subheadline in src/routes/+page.svelte have been updated with the final, approved copy from our content architecture.\nTrust Signal Added: The \"Trusted by growing businesses nationwide\" trust signal has been successfully implemented below the CTA buttons.\nStyling Applied: The trust signal is styled with appropriate color and spacing (text-gray-300, mt-6) to be noticeable yet subtle, reinforcing credibility without distracting from the primary CTAs.\n\nStatus: The hero section now reflects the finalized messaging and includes the key trust-building element as planned. The content is fully integrated.\n</info added on 2025-06-07T17:21:55.017Z>",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "CTA Implementation and Linking",
-          "description": "Implement the primary and secondary CTAs (Get Started Today, View Our Services) within the hero component. Link the CTAs to their respective target pages.",
-          "dependencies": [
-            2
-          ],
-          "details": "Create button elements for the primary and secondary CTAs. Style them according to the design. Link the 'Get Started Today' CTA to the contact/lead generation page and the 'View Our Services' CTA to the services page.\n<info added on 2025-06-07T17:23:03.522Z>\nVerify `href` attributes for the 'Get Started Today' and 'View Services' CTAs point to `/contact` and `/services` respectively. Create basic placeholder Svelte pages for these paths to enable functional links and prevent 404 errors during testing. Manually test button navigation to confirm they lead to the placeholder pages.\n</info added on 2025-06-07T17:23:03.522Z>\n<info added on 2025-06-07T17:24:48.382Z>\nAccomplishments:\nLink Verification: The href attributes for the primary (/contact) and secondary (/services) CTAs in the hero section were confirmed to be correct.\nPlaceholder Pages Created: Basic placeholder pages for /contact and /services have been created to ensure the links are functional and do not result in \"404 Not Found\" errors.\nFunctionality Confirmed: The hero section CTAs now successfully navigate to their respective placeholder pages, making the primary conversion paths functional for testing and further development.\n\nStatus: The CTA buttons in the hero section are now fully implemented and correctly linked.\n</info added on 2025-06-07T17:24:48.382Z>",
-          "status": "done"
-        },
-        {
-          "id": 4,
-          "title": "Hero Background Image Implementation and Optimization",
-          "description": "Implement the hero background image, ensuring responsive optimization for different screen sizes. Consider using `svelte:picture` for responsive image handling.",
-          "dependencies": [
-            1
-          ],
-          "details": "Add the hero background image to the hero component. Implement responsive image handling using `svelte:picture` or similar techniques to optimize image delivery for different devices and screen sizes. Ensure the image is visually appealing and contributes to the overall design.\n<info added on 2025-06-07T17:26:19.190Z>\nBuilding on Completed Work:\nHero section structure with an `<img>` tag placeholder is complete.\nImage strategy defined with specific recommendations and responsive sizes.\n\nImplementation Plan:\n1. Download and Organize Images: Download the recommended hero image from Unsplash and create the three required responsive versions (desktop, tablet, mobile) as specified in the image strategy. Place them in the `static/images/hero/` directory.\n2. Implement `<picture>` Element: Replace the current `<img>` tag in `src/routes/+page.svelte` with a `<picture>` element. This will allow for serving different image sources based on screen size, which is critical for performance.\n3. Add Responsive Sources: Within the `<picture>` element, add `<source>` tags with `media` queries to specify which image version to load for desktop, tablet, and mobile breakpoints.\n4. Set Fallback Image: Include a default `<img>` tag inside the `<picture>` element to serve as a fallback for older browsers.\n5. Apply `loading=\"eager\"`: Since the hero image is above the fold, ensure it loads immediately by setting `loading=\"eager\"` on the `<img>` tag.\n6. Verify Alt Text: Confirm that the descriptive, SEO-optimized alt text from our `alt-text.md` library is applied to the fallback `<img>` tag.\n</info added on 2025-06-07T17:26:19.190Z>\n<info added on 2025-06-07T17:28:47.281Z>\nHero Background Image Implementation & Optimization Complete.\nAccomplishments:\n- Images Downloaded: The recommended hero image was successfully downloaded in three responsive sizes (desktop, tablet, mobile).\n- Directory Organized: The images are now correctly stored in the static/images/hero/ directory.\n- <picture> Element Implemented: The hero section in src/routes/+page.svelte now uses the <picture> element to serve the appropriate image size based on screen width, significantly improving performance.\n- Responsive Sources Added: <source> tags with media queries are in place to deliver the 1920x1080.webp for desktops, 1024x600.webp for tablets, and 768x500.webp for mobile devices.\n- Performance Optimized: The primary hero image is set to loading=\"eager\" to ensure it loads immediately for a fast Largest Contentful Paint (LCP).\n- Accessibility Maintained: SEO-optimized alt text has been preserved on the fallback <img> tag.\nStatus: The hero background image is now fully implemented and optimized for responsive performance.\n</info added on 2025-06-07T17:28:47.281Z>",
-          "status": "done"
-        },
-        {
-          "id": 5,
-          "title": "Responsive Behavior Refinement and Testing",
-          "description": "Refine the responsive behavior of the hero section to ensure optimal display across various devices and screen sizes. Conduct thorough testing on different devices and browsers.",
-          "dependencies": [
-            1,
-            2,
-            3,
-            4
-          ],
-          "details": "Adjust the layout, typography, and spacing of the hero section for different screen sizes using media queries or other responsive design techniques. Test the hero section on various devices (desktop, tablet, mobile) and browsers to ensure consistent and optimal display. Address any layout issues or inconsistencies.\n<info added on 2025-06-08T00:21:38.830Z>\nAnalyze the hero section for responsive refinements. The secondary CTA button ('View Services') currently has styling appropriate for a light background; adjust its styling to better fit the dark hero background by making it a transparent 'outline' button with a white border and text.\n</info added on 2025-06-08T00:21:38.830Z>\n<info added on 2025-06-08T00:22:29.531Z>\nUpdated styling for the secondary CTA button ('View Services') in `src/routes/+page.svelte`. It is now a transparent 'outline' button with a white border and text, as required for the dark hero background. This completes the button styling refinement. The responsive behavior of the button container, handled by `flex-col sm:flex-row` and `w-full sm:w-auto`, ensures correct stacking on mobile and was already implemented.\n</info added on 2025-06-08T00:22:29.531Z>",
-          "status": "done"
-        }
-      ]
+      "dependencies": [
+        1,
+        3
+      ],
+      "status": "pending",
+      "subtasks": []
     },
     {
       "id": 6,
-      "title": "Develop Services Overview Section",
-      "description": "Develop the services overview section, showcasing three service tiers (Essential, Enhanced, Premium) with features and pricing ranges.",
-      "details": "",
-      "testStrategy": "",
+      "title": "Create Password Reset Request Page (`/forgot-password`)",
+      "description": "Develop the page and logic for users to request a password reset. This involves a form to enter their email and an API call to Pocketbase to initiate the reset process.",
+      "details": "Create a SvelteKit route for `/forgot-password`. Implement a form with an `email` input field. On submission, call `pb.collection('users').requestPasswordReset(email)`. Display a confirmation message to the user (e.g., 'If an account with this email exists, a password reset link has been sent.'). Ensure the page is responsive and visually consistent.",
+      "testStrategy": "Request password reset for an existing user's email; verify Pocketbase sends the email (requires Pocketbase email service configuration). Request reset for a non-existent email; verify a generic success message is shown. Test form validation and error handling (Task 4).",
       "priority": "medium",
-      "dependencies": [],
-      "status": "done",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Service tier component creation",
-          "description": "Design and implement the core components for displaying different service tiers in the services overview section",
-          "dependencies": [],
-          "details": "Create reusable components that represent each service tier (e.g., Basic, Standard, Premium). Each component should have a consistent layout with placeholders for tier name, description, and feature list. Implement responsive design to ensure proper display across different devices. Consider using the Facade design pattern to simplify the interface for these complex components.\n<info added on 2025-06-08T00:24:29.346Z>\nReplace the existing 'Our Services' section in `src/routes/+page.svelte`. Update its title and description to be more focused on pricing plans. Remove the current three-column grid of service features and replace it with a new grid structure to contain the three service tier cards (Essential, Enhanced, and Premium). This work sets the stage for implementing detailed feature comparison and pricing displays in subsequent subtasks.\n</info added on 2025-06-08T00:24:29.346Z>",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "Feature comparison implementation",
-          "description": "Develop the feature comparison functionality that highlights differences between service tiers",
-          "dependencies": [
-            1
-          ],
-          "details": "Create a comparison matrix that clearly shows which features are included in each tier. Implement visual indicators (checkmarks, highlights, etc.) to show feature availability across tiers. Consider using the Strategy pattern to handle different comparison display modes (e.g., side-by-side, table view). Ensure accessibility compliance for the comparison interface.\n<info added on 2025-06-08T00:26:12.354Z>\nReplace the placeholder features in each pricing tier with more specific and distinct features. This will create a clearer comparison for users, showing the progressive value of each plan. Ensure the 'Enhanced' and 'Premium' plans clearly state they include all features from the tier below them.\n</info added on 2025-06-08T00:26:12.354Z>",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "Pricing display integration",
-          "description": "Integrate and implement the pricing information display within the service tier components",
-          "dependencies": [
-            1,
-            2
-          ],
-          "details": "Add pricing information to each service tier component, including monthly/annual options if applicable. Implement any discount visualizations or savings calculations. Create toggles for different pricing models (time-based, project-based, value-based) if the business offers multiple pricing structures. Ensure currency formatting is handled correctly and pricing updates dynamically based on selected options.\n<info added on 2025-06-08T00:27:29.620Z>\nThe pricing display, including monthly rates, was integrated during the initial component creation in subtask 6.1. The current implementation fulfills the core requirements of this task. No further changes are needed.\n</info added on 2025-06-08T00:27:29.620Z>",
-          "status": "done"
-        }
-      ]
+      "dependencies": [
+        1
+      ],
+      "status": "pending",
+      "subtasks": []
     },
     {
       "id": 7,
-      "title": "Implement Navigation & Routing",
-      "description": "Implement the fixed navigation bar with links to main sections (Services, About, Process, Pricing, Contact) and an Account Management link.",
-      "details": "",
-      "testStrategy": "",
+      "title": "Create Password Reset Confirmation Page (`/reset-password`)",
+      "description": "Develop the page and logic for users to confirm their password reset using a token received via email. This involves a form for the new password and an API call to Pocketbase.",
+      "details": "Create a SvelteKit dynamic route like `/reset-password/[token]`. On page load, extract the `token` from the URL. Implement a form with `newPassword` and `newPasswordConfirm` fields. On submission, call `pb.collection('users').confirmPasswordReset(token, newPassword, newPasswordConfirm)`. On success, display a message and redirect to `/login`. Handle invalid/expired tokens gracefully (errors from Task 4). Ensure responsiveness and visual consistency.",
+      "testStrategy": "Complete the flow: request reset (Task 6), use the link/token from email, and successfully set a new password. Verify redirection to login and ability to log in with the new password. Test with invalid/expired tokens. Test form validation for password fields.",
       "priority": "medium",
-      "dependencies": [],
-      "status": "done",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "SvelteKit Route Configuration",
-          "description": "Set up the file-system based routing structure for the application",
-          "dependencies": [],
-          "details": "Create the necessary route files in the src/routes directory following SvelteKit's filesystem-based routing conventions. Implement basic pages with +page.svelte files, and consider advanced routing features like dynamic parameters, optional parameters, and catch-all routes as needed for the application structure.\n<info added on 2025-06-08T00:29:10.333Z>\nThe `contact` and `services` routes have been confirmed to exist. The directory structure and placeholder `+page.svelte` files for `/about`, `/process`, `/pricing`, and `/account` will be created next. This will finalize the route setup needed for the navigation bar.\n</info added on 2025-06-08T00:29:10.333Z>",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "Navigation Component Development",
-          "description": "Create a reusable navigation component for desktop view",
-          "dependencies": [
-            1
-          ],
-          "details": "Develop a main navigation component that will be used across the application. Implement links to all routes defined in the routing structure. Ensure the component is modular and can be easily imported into layouts. Consider using SvelteKit's navigation features for client-side navigation between routes.",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "Mobile Navigation Adaptation",
-          "description": "Adapt the navigation component for mobile devices",
-          "dependencies": [
-            2
-          ],
-          "details": "Modify the navigation component to be responsive on mobile devices. Implement a hamburger menu or similar mobile-friendly navigation pattern. Add toggle functionality to show/hide the mobile menu. Ensure smooth transitions between desktop and mobile views using CSS media queries.",
-          "status": "done"
-        },
-        {
-          "id": 4,
-          "title": "Active State Management",
-          "description": "Implement active state highlighting for current route",
-          "dependencies": [
-            2,
-            3
-          ],
-          "details": "Add logic to highlight the currently active navigation item based on the current route. Use SvelteKit's routing utilities to determine the active page. Implement visual indicators (like different styling) for active navigation items in both desktop and mobile views. Ensure the active state updates correctly during navigation.",
-          "status": "done"
-        }
-      ]
+      "dependencies": [
+        1,
+        6
+      ],
+      "status": "pending",
+      "subtasks": []
     },
     {
       "id": 8,
-      "title": "Develop About & Process Sections",
-      "description": "Create the About/Why Choose Us section, highlighting the partnership approach, client-first mentality, security standards, and experience.",
-      "details": "",
-      "testStrategy": "",
+      "title": "Create Basic Account Page (`/account`)",
+      "description": "Develop a basic `/account` page accessible only to logged-in users. For MVP, it can display basic user information and serve as a destination for the header link.",
+      "details": "Create a SvelteKit route for `/account`. Implement route protection using a `+layout.server.js` or `+page.server.js` load function that checks `pb.authStore.isValid` (or server-side equivalent by validating cookie). If not authenticated, redirect to `/login`. If authenticated, display basic user information from `pb.authStore.model` (e.g., name, email). Ensure responsiveness and visual consistency.",
+      "testStrategy": "Attempt to access `/account` when logged out; verify redirection to `/login`. Log in and navigate to `/account`; verify user information is displayed and page is accessible. Verify the 'Account' link in the header (from Task 5) navigates here.",
       "priority": "medium",
-      "dependencies": [],
-      "status": "done",
+      "dependencies": [
+        1,
+        3,
+        5
+      ],
+      "status": "pending",
       "subtasks": []
     },
     {
       "id": 9,
-      "title": "Implement Pricing Sections",
-      "description": "Implement the pricing sections, including detailed pricing displays for all service tiers and packages.",
-      "details": "",
-      "testStrategy": "",
+      "title": "Ensure UI/UX Consistency Across New Auth Pages",
+      "description": "Review and refine the UI of all new authentication pages (Login, Register, Password Reset, Account) to ensure they are responsive and visually consistent with the existing homepage's design language, including fonts, colors, and button styles.",
+      "details": "Audit `/login`, `/register`, `/forgot-password`, `/reset-password/[token]`, and `/account` pages. Apply global CSS or shared Svelte components to ensure consistency in fonts, color palette, button styles, form elements, layout, and spacing, matching the existing homepage. Test responsiveness across various screen sizes (desktop, tablet, mobile).",
+      "testStrategy": "Perform visual inspection of all new pages against the homepage design. Use browser developer tools to check responsiveness and consistency of applied styles. Verify common UI elements are identical or stylistically coherent across pages.",
       "priority": "medium",
-      "dependencies": [],
-      "status": "done",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Design Pricing Component Architecture",
-          "description": "Develop the foundational architecture for the `/pricing` page, including modular components for pricing cards, feature comparison, and FAQ. Ensure the architecture supports scalability and maintainability, and does not affect the existing homepage pricing section.",
-          "dependencies": [],
-          "details": "Define reusable components for pricing tiers (Essential, Enhanced, Premium), a detailed feature comparison table, and an FAQ section. Establish clear data structures for pricing and features. Ensure separation of concerns so updates to `/pricing` do not impact the homepage.\n<info added on 2025-06-08T01:47:56.840Z>\nCreate a new reusable `PricingCard.svelte` component, extracting the existing structure from the homepage to ensure a consistent design. Create a placeholder `Faq.svelte` component. Update the `/pricing/+page.svelte` file to use these new components, laying the foundational structure for the detailed pricing page, including sections for the pricing tiers, a feature comparison table, and the FAQ.\n</info added on 2025-06-08T01:47:56.840Z>",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "Develop Tier Comparison Feature",
-          "description": "Implement a detailed feature comparison table that clearly breaks down what is included in each pricing plan. Ensure the table is intuitive, highlights differences, and supports user-friendly interactions.",
-          "dependencies": [
-            1
-          ],
-          "details": "Build a comparison table that lists features as rows and pricing tiers as columns. Highlight key differences and allow users to easily scan which features are included in each plan. Consider using visual cues (e.g., checkmarks, highlights) and accessibility best practices.",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "Adapt Pricing Display for Responsive Layouts",
-          "description": "Ensure the entire `/pricing` page, including pricing cards, comparison table, and FAQ, is fully responsive and optimized for all device sizes, with special attention to mobile usability.",
-          "dependencies": [
-            1,
-            2
-          ],
-          "details": "Implement responsive design patterns such as stacking cards vertically on mobile, using accordions for feature tables, and ensuring FAQ readability. Avoid horizontal scrolling and maintain clarity and usability across breakpoints.\n<info added on 2025-06-08T02:00:22.530Z>\nThe responsive design for the pricing page has been handled through the use of responsive utility classes and components. The pricing cards stack correctly on mobile thanks to the Grid component, and the feature comparison table is horizontally scrollable on small screens to prevent layout issues. The FAQ component is also inherently responsive. No further changes are required.\n</info added on 2025-06-08T02:00:22.530Z>",
-          "status": "done"
-        }
-      ]
+      "dependencies": [
+        2,
+        3,
+        6,
+        7,
+        8
+      ],
+      "status": "pending",
+      "subtasks": []
     },
     {
       "id": 10,
-      "title": "Optimize Contact & CTA",
-      "description": "Design and implement the contact/CTA section with a final call-to-action and contact information.",
-      "details": "",
-      "testStrategy": "",
-      "priority": "medium",
-      "dependencies": [],
-      "status": "done",
-      "subtasks": []
-    },
-    {
-      "id": 11,
-      "title": "Integrate Chatwoot",
-      "description": "Integrate Chatwoot for real-time customer support, ensuring chat accessibility for both prospective and existing customers.",
-      "details": "",
-      "testStrategy": "",
-      "priority": "medium",
-      "dependencies": [],
-      "status": "done",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Chatwoot Account Setup and Script Retrieval",
-          "description": "Create a Chatwoot account, configure the inbox, and obtain the live chat widget script or credentials required for integration.",
-          "dependencies": [],
-          "details": "Sign up for Chatwoot, set up your inbox, and navigate to the widget integration section to copy the provided script or credentials needed for embedding the chat widget.",
-          "status": "done"
-        },
-        {
-          "id": 2,
-          "title": "Frontend Integration Implementation",
-          "description": "Add the Chatwoot script to the main application layout to ensure the chat widget appears on all pages of the SvelteKit application.",
-          "dependencies": [
-            1
-          ],
-          "details": "Insert the Chatwoot script into the root layout file (e.g., +layout.svelte) of your SvelteKit project so that the widget loads globally across the site.",
-          "status": "done"
-        },
-        {
-          "id": 3,
-          "title": "Testing and Optimization Across Devices",
-          "description": "Test the Chatwoot chat widget functionality across different pages and devices, and optimize for consistent performance and appearance.",
-          "dependencies": [
-            2
-          ],
-          "details": "Verify that the chat widget loads and functions correctly on all major pages and devices (desktop, tablet, mobile). Address any layout or performance issues discovered during testing.",
-          "status": "done"
-        }
-      ]
-    },
-    {
-      "id": 12,
-      "title": "Implement Account Management Placeholder",
-      "description": "Implement a login page placeholder and account management navigation structure for future dashboard integration.",
-      "details": "",
-      "testStrategy": "",
-      "priority": "low",
-      "dependencies": [],
-      "status": "done",
-      "subtasks": []
-    },
-    {
-      "id": 13,
-      "title": "Optimize Performance",
-      "description": "Optimize the website for performance, targeting 90+ PageSpeed Insights scores on mobile and desktop. Optimize images and implement lazy loading.",
-      "details": "",
-      "testStrategy": "",
-      "priority": "medium",
-      "dependencies": [],
-      "status": "deferred",
-      "subtasks": [
-        {
-          "id": 1,
-          "title": "Image Optimization Implementation",
-          "description": "Implement techniques to optimize images, including using next-gen formats (WebP, AVIF), compressing images, and serving responsive images with srcset for different device sizes.",
-          "dependencies": [],
-          "details": "Ensure all images are compressed before upload, use responsive image markup, and convert legacy formats to WebP or AVIF. Integrate image optimization into the build process or use a CDN with automatic image optimization features.\n<info added on 2025-06-08T03:08:08.105Z>\nImage optimization for the hero section was implemented previously using the `<picture>` element with WebP formats and responsive `srcset` attributes. The `loading=\"eager\"` attribute is also correctly applied for this above-the-fold image. As there are no other images on the site, no further action is needed for this subtask.\n</info added on 2025-06-08T03:08:08.105Z>",
-          "status": "deferred"
-        },
-        {
-          "id": 2,
-          "title": "Lazy Loading Strategy",
-          "description": "Develop and implement a lazy loading strategy for images, videos, and other non-critical assets to defer their loading until they enter the viewport.",
-          "dependencies": [
-            1
-          ],
-          "details": "Utilize native browser lazy loading attributes (e.g., loading='lazy') or JavaScript-based solutions for assets not supported natively. Ensure that above-the-fold content is prioritized and that lazy loading does not negatively impact SEO or user experience.",
-          "status": "pending"
-        },
-        {
-          "id": 3,
-          "title": "Bundle Size Analysis and Reduction",
-          "description": "Analyze JavaScript and CSS bundle sizes and implement strategies to reduce them, such as code splitting, tree shaking, and minification.",
-          "dependencies": [
-            2
-          ],
-          "details": "Use tools like Webpack Bundle Analyzer to identify large dependencies, remove unused code, and split bundles for faster initial loads. Minify and compress assets before deployment.",
-          "status": "pending"
-        },
-        {
-          "id": 4,
-          "title": "Core Web Vitals Optimization",
-          "description": "Optimize for Core Web Vitals metrics (LCP, INP, CLS) by addressing render-blocking resources, optimizing critical CSS, and minimizing layout shifts.",
-          "dependencies": [
-            3
-          ],
-          "details": "Defer non-critical JavaScript, preload key fonts, prioritize above-the-fold content, and monitor third-party scripts to reduce their impact on responsiveness and stability.",
-          "status": "pending"
-        },
-        {
-          "id": 5,
-          "title": "Performance Testing and Monitoring",
-          "description": "Set up continuous performance testing and real-time monitoring using tools like Google PageSpeed Insights and Lighthouse to track improvements and regressions.",
-          "dependencies": [
-            4
-          ],
-          "details": "Automate performance audits in CI/CD pipelines, monitor key metrics over time, and set up alerts for performance regressions. Use gathered data to inform further optimization cycles.",
-          "status": "pending"
-        }
-      ]
-    },
-    {
-      "id": 14,
-      "title": "Implement Analytics",
-      "description": "Implement Google Analytics 4 for comprehensive tracking of user behavior and conversion funnels.",
-      "details": "",
-      "testStrategy": "",
-      "priority": "medium",
-      "dependencies": [],
-      "status": "deferred",
-      "subtasks": []
-    },
-    {
-      "id": 15,
-      "title": "Implement SEO",
-      "description": "Implement SEO fundamentals, including meta tags, structured data, and semantic HTML, to improve search engine visibility.",
-      "details": "",
-      "testStrategy": "",
-      "priority": "medium",
-      "dependencies": [],
-      "status": "deferred",
+      "title": "Perform End-to-End Testing of Authentication Flows",
+      "description": "Conduct comprehensive end-to-end testing of the entire authentication system, covering registration, login, logout, password reset flows, and protected route access.",
+      "details": "Execute full user scenarios: 1. New user registration, auto-login, header update, logout. 2. Existing user login, header update, navigation to account page, logout. 3. Forgotten password request, email link usage, password reset, login with new password. 4. Attempt to access protected `/account` page while logged out and while logged in. Verify all redirects, UI updates, and error messages behave as expected.",
+      "testStrategy": "Manually execute the detailed end-to-end scenarios in a browser environment. Document any deviations from expected behavior. Check browser console for errors during these flows. Confirm all aspects of the MVP requirements are met.",
+      "priority": "high",
+      "dependencies": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "status": "pending",
       "subtasks": []
     }
   ]

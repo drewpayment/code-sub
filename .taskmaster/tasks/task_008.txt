@@ -1,11 +1,11 @@
 # Task ID: 8
-# Title: Develop About & Process Sections
-# Status: done
-# Dependencies: None
+# Title: Create Basic Account Page (`/account`)
+# Status: pending
+# Dependencies: 1, 3, 5
 # Priority: medium
-# Description: Create the About/Why Choose Us section, highlighting the partnership approach, client-first mentality, security standards, and experience.
+# Description: Develop a basic `/account` page accessible only to logged-in users. For MVP, it can display basic user information and serve as a destination for the header link.
 # Details:
-
+Create a SvelteKit route for `/account`. Implement route protection using a `+layout.server.js` or `+page.server.js` load function that checks `pb.authStore.isValid` (or server-side equivalent by validating cookie). If not authenticated, redirect to `/login`. If authenticated, display basic user information from `pb.authStore.model` (e.g., name, email). Ensure responsiveness and visual consistency.
 
 # Test Strategy:
-
+Attempt to access `/account` when logged out; verify redirection to `/login`. Log in and navigate to `/account`; verify user information is displayed and page is accessible. Verify the 'Account' link in the header (from Task 5) navigates here.
