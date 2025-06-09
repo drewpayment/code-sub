@@ -51,6 +51,7 @@
 		"@oslojs/encoding": "^1.1.0",
 		"drizzle-orm": "^0.44.0",
 		"lucide-svelte": "^0.513.0",
+		"pocketbase": "^0.26.1",
 		"postgres": "^3.4.5"
 	}
 }

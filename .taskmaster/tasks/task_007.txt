@@ -1,40 +1,11 @@
 # Task ID: 7
-# Title: Implement Navigation & Routing
-# Status: done
-# Dependencies: None
+# Title: Create Password Reset Confirmation Page (`/reset-password`)
+# Status: deferred
+# Dependencies: 1, 6
 # Priority: medium
-# Description: Implement the fixed navigation bar with links to main sections (Services, About, Process, Pricing, Contact) and an Account Management link.
+# Description: Develop the page and logic for users to confirm their password reset using a token received via email. This involves a form for the new password and an API call to Pocketbase.
 # Details:
-
+Create a SvelteKit dynamic route like `/reset-password/[token]`. On page load, extract the `token` from the URL. Implement a form with `newPassword` and `newPasswordConfirm` fields. On submission, call `pb.collection('users').confirmPasswordReset(token, newPassword, newPasswordConfirm)`. On success, display a message and redirect to `/login`. Handle invalid/expired tokens gracefully (errors from Task 4). Ensure responsiveness and visual consistency.
 
 # Test Strategy:
-
-
-# Subtasks:
-## 1. SvelteKit Route Configuration [done]
-### Dependencies: None
-### Description: Set up the file-system based routing structure for the application
-### Details:
-Create the necessary route files in the src/routes directory following SvelteKit's filesystem-based routing conventions. Implement basic pages with +page.svelte files, and consider advanced routing features like dynamic parameters, optional parameters, and catch-all routes as needed for the application structure.
-<info added on 2025-06-08T00:29:10.333Z>
-The `contact` and `services` routes have been confirmed to exist. The directory structure and placeholder `+page.svelte` files for `/about`, `/process`, `/pricing`, and `/account` will be created next. This will finalize the route setup needed for the navigation bar.
-</info added on 2025-06-08T00:29:10.333Z>
-
-## 2. Navigation Component Development [done]
-### Dependencies: 7.1
-### Description: Create a reusable navigation component for desktop view
-### Details:
-Develop a main navigation component that will be used across the application. Implement links to all routes defined in the routing structure. Ensure the component is modular and can be easily imported into layouts. Consider using SvelteKit's navigation features for client-side navigation between routes.
-
-## 3. Mobile Navigation Adaptation [done]
-### Dependencies: 7.2
-### Description: Adapt the navigation component for mobile devices
-### Details:
-Modify the navigation component to be responsive on mobile devices. Implement a hamburger menu or similar mobile-friendly navigation pattern. Add toggle functionality to show/hide the mobile menu. Ensure smooth transitions between desktop and mobile views using CSS media queries.
-
-## 4. Active State Management [done]
-### Dependencies: 7.2, 7.3
-### Description: Implement active state highlighting for current route
-### Details:
-Add logic to highlight the currently active navigation item based on the current route. Use SvelteKit's routing utilities to determine the active page. Implement visual indicators (like different styling) for active navigation items in both desktop and mobile views. Ensure the active state updates correctly during navigation.
-
+Complete the flow: request reset (Task 6), use the link/token from email, and successfully set a new password. Verify redirection to login and ability to log in with the new password. Test with invalid/expired tokens. Test form validation for password fields.

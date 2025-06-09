@@ -1,13 +1,19 @@
 <script lang="ts">
 	import '../app.css';
 	import { Header, Footer } from '$lib';
+	import type { LayoutData } from './$types';
+	import { currentUser } from '$lib/pocketbase';
+
+	export let data: LayoutData;
+
+	$: currentUser.set(data.user);
 </script>
 
 <svelte:head>
 	<script>
 		window.chatwootSettings = {"position":"right","type":"standard","launcherTitle":"Chat with us"};
 		(function(d,t) {
-			var BASE_URL="http://chatwoot.hoytlabs.cloud";
+			var BASE_URL="https://chatwoot.hoytlabs.cloud";
 			var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
 			g.src=BASE_URL+"/packs/js/sdk.js";
 			g.defer = true;

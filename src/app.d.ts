@@ -1,10 +1,14 @@
+// See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 declare global {
 	namespace App {
+		// interface Error {}
 		interface Locals {
-			user: import('$lib/server/auth').SessionValidationResult['user'];
-			session: import('$lib/server/auth').SessionValidationResult['session'];
+			pb: import('pocketbase').default;
+			user: import('pocketbase').default['authStore']['model'];
 		}
+		// interface PageData {}
+		// interface Platform {}
 	}
 }
 
