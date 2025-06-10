@@ -1,26 +1,22 @@
+import { pb } from '$lib/pocketbase';
 import type { Handle } from '@sveltejs/kit';
-import * as auth from '$lib/server/auth.js';
 
-const handleAuth: Handle = async ({ event, resolve }) => {
-	const sessionToken = event.cookies.get(auth.sessionCookieName);
-
-	if (!sessionToken) {
-		event.locals.user = null;
-		event.locals.session = null;
-		return resolve(event);
+export const handle: Handle = async ({ event, resolve }) => {
+	pb.authStore.loadFromCookie(event.request.headers.get('cookie') || '');
+	if (pb.authStore.isValid) {
+		try {
+			await pb.collection('users').authRefresh();
+		} catch (_) {
+			pb.authStore.clear();
+		}
 	}
 
-	const { session, user } = await auth.validateSessionToken(sessionToken);
+	event.locals.pb = pb;
+	event.locals.user = structuredClone(pb.authStore.model);
 
-	if (session) {
-		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-	} else {
-		auth.deleteSessionTokenCookie(event);
-	}
+	const response = await resolve(event);
 
-	event.locals.user = user;
-	event.locals.session = session;
-	return resolve(event);
+	response.headers.set('set-cookie', pb.authStore.exportToCookie({ secure: false }));
+
+	return response;
 };
-
-export const handle: Handle = handleAuth;

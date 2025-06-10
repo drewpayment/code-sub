@@ -1,11 +1,31 @@
 # Task ID: 8
-# Title: Develop About & Process Sections
+# Title: Create Basic Account Page (`/account`)
 # Status: done
-# Dependencies: None
+# Dependencies: 1, 3, 5
 # Priority: medium
-# Description: Create the About/Why Choose Us section, highlighting the partnership approach, client-first mentality, security standards, and experience.
+# Description: Develop a basic `/account` page accessible only to logged-in users. For MVP, it can display basic user information and serve as a destination for the header link.
 # Details:
-
+Create a SvelteKit route for `/account`. Implement route protection using a `+layout.server.js` or `+page.server.js` load function that checks `pb.authStore.isValid` (or server-side equivalent by validating cookie). If not authenticated, redirect to `/login`. If authenticated, display basic user information from `pb.authStore.model` (e.g., name, email). Ensure responsiveness and visual consistency.
 
 # Test Strategy:
+Attempt to access `/account` when logged out; verify redirection to `/login`. Log in and navigate to `/account`; verify user information is displayed and page is accessible. Verify the 'Account' link in the header (from Task 5) navigates here.
+
+# Subtasks:
+## 1. Implement Route Protection and Authentication Check [done]
+### Dependencies: None
+### Description: Set up secure route protection for the account page by integrating authentication checks. Ensure that only authenticated users can access the page, redirecting unauthenticated users to the login screen or another appropriate route.
+### Details:
+Use a protected route component or middleware to verify authentication status before rendering the account page. Integrate with the existing authentication system to check for valid tokens or session state. Handle redirection logic for unauthenticated access attempts.
+
+## 2. Develop User Info Display UI [done]
+### Dependencies: 8.1
+### Description: Create a user interface component that displays authenticated user information on the account page. Ensure the UI is clear, accessible, and presents relevant user details securely.
+### Details:
+Design and implement a component that fetches and displays user data such as name, email, and profile picture. Ensure sensitive information is handled securely and only shown to the authenticated user.
+
+## 3. Apply Responsive and Consistent Styling [done]
+### Dependencies: 8.2
+### Description: Style the account page and its components to ensure a responsive layout and visual consistency with the rest of the application.
+### Details:
+Use the application's design system or style guide to apply consistent colors, typography, and spacing. Ensure the UI adapts gracefully to different screen sizes and devices.
 

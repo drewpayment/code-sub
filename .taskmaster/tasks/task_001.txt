@@ -1,49 +1,11 @@
 # Task ID: 1
-# Title: SvelteKit Project Setup
+# Title: Integrate Pocketbase JS SDK and Initialize Global Auth Store
 # Status: done
 # Dependencies: None
 # Priority: high
-# Description: Initialize SvelteKit project with necessary configurations (e.g., TypeScript, ESLint, Prettier). Set up build tools and deployment pipeline.
+# Description: Set up the Pocketbase JavaScript SDK within the SvelteKit application. Initialize and expose a global Svelte store to manage and react to `pb.authStore` changes.
 # Details:
-
+Install the `pocketbase` npm package. Create a Svelte store (e.g., `src/lib/stores/authStore.js`) that initializes a Pocketbase client instance: `new PocketBase('https://pocketbase.hoytlabs.cloud/')`. The store should subscribe to `pb.authStore.onChange((token, model) => { /* update reactive store variables like currentUser, isValid */ }, true)` to reflect auth state changes. Export the `pb` instance and reactive store variables (e.g., `currentUser`, `isValid`).
 
 # Test Strategy:
-
-
-# Subtasks:
-## 1. Initial Project Scaffolding [done]
-### Dependencies: None
-### Description: Create a new SvelteKit project using the official scaffolding tool, select the desired template, and install dependencies.
-### Details:
-Run `npm create svelte@latest` or `npx sv create my-app` to scaffold the project. Choose the skeleton project template and follow prompts. Navigate into the project directory and run `npm install` to install dependencies. Start the development server with `npm run dev` to verify setup.[1][5]
-
-## 2. TypeScript Integration [done]
-### Dependencies: 1.1
-### Description: Enable and configure TypeScript support in the SvelteKit project.
-### Details:
-During project scaffolding, opt-in for TypeScript when prompted. If not selected initially, add TypeScript by installing the necessary dependencies and renaming files to `.ts`/`.svelte`. Ensure `tsconfig.json` is present and properly configured for SvelteKit.[1][2]
-
-## 3. ESLint and Prettier Setup [done]
-### Dependencies: 1.2
-### Description: Set up ESLint and Prettier for code linting and formatting in the SvelteKit project.
-### Details:
-Install ESLint and Prettier as dev dependencies. Configure `.eslintrc` and `.prettierrc` files, ensuring compatibility with Svelte and TypeScript. Optionally, use SvelteKit's integration prompts or add recommended plugins manually.[2]
-<info added on 2025-06-06T22:30:47.551Z>
-Priority: Low. Defer until core functionality is complete.
-</info added on 2025-06-06T22:30:47.551Z>
-
-## 4. Build Pipeline Configuration [done]
-### Dependencies: 1.3
-### Description: Configure the build pipeline, including adapters and build scripts, for the SvelteKit project.
-### Details:
-Choose and install the appropriate SvelteKit adapter (e.g., static, node, or cloud provider-specific). Update `svelte.config.js` to use the selected adapter. Adjust build scripts in `package.json` as needed for the deployment target.[5]
-<info added on 2025-06-06T22:30:55.548Z>
-Priority changed: This subtask has been deprioritized and can be deferred until later in the development process. Build pipeline configuration is not needed for initial development and can be set up when ready for production deployment.
-</info added on 2025-06-06T22:30:55.548Z>
-
-## 5. Deployment Workflow Setup [done]
-### Dependencies: 1.4
-### Description: Establish a deployment workflow for the SvelteKit project, targeting the chosen hosting environment.
-### Details:
-Configure deployment scripts and CI/CD pipelines (e.g., GitHub Actions, Vercel, Netlify). Ensure environment variables and build outputs are correctly handled for the selected adapter and hosting platform.
-
+Verify the Pocketbase client initializes without errors. Confirm the Svelte store correctly reflects the initial (logged-out) authentication state. Test that store variables update reactively when `pb.authStore` changes (can be simulated or tested after login/logout implementation).

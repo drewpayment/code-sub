@@ -1,321 +1,49 @@
 # Task ID: 3
-# Title: Develop Core Layout Structure
+# Title: Create User Login Page (`/login`)
 # Status: done
-# Dependencies: None
+# Dependencies: 1
 # Priority: high
-# Description: Create the basic layout structure, including navigation, footer, and a responsive grid system, ensuring mobile-first design principles.
+# Description: Develop the `/login` page with a form for users to input their email and password. Implement the logic to authenticate users using the Pocketbase SDK and manage their session.
 # Details:
-
+Create a SvelteKit route for `/login`. Implement a form with input fields for `email` and `password`. Include a link to the password reset page (`/forgot-password`). On submission, call `pb.collection('users').authWithPassword(email, password)`. Upon successful login, redirect to the homepage. The global auth store should update automatically. Implement client-side validation for required fields. Ensure the page is responsive and visually consistent.
 
 # Test Strategy:
-
+Test successful login with credentials of a user created in Task 2. Verify redirection to homepage and auth store updates. Test login with invalid credentials (wrong password, non-existent email) and verify appropriate error messages (from Task 4) are shown. Verify the 'Forgot Password?' link navigates correctly.
 
 # Subtasks:
-## 1. Responsive grid system implementation [done]
+## 1. SvelteKit Route and Page Setup [done]
 ### Dependencies: None
-### Description: Implement a responsive grid layout using Svelte-grid or Svelte-grid-responsive
+### Description: Create the necessary SvelteKit route structure and page files for the login functionality
 ### Details:
-Choose between Svelte-grid (draggable/resizable grid with responsive breakpoints) or Svelte-grid-responsive (Bootstrap-based grid system). Install the chosen package, set up responsive breakpoints, and implement the basic grid structure for the application layout.
-<info added on 2025-06-07T02:26:16.718Z>
-## Exploration Phase Completed
+Create the login route directory structure with +page.svelte and +page.server.ts files. Set up the basic page layout and ensure proper routing to and from the login page. Include navigation guards to redirect authenticated users away from the login page.
 
-**Current Project Analysis:**
-- SvelteKit project with Svelte 5.0.0
-- Tailwind CSS v4.0.0 already configured and working
-- TypeScript enabled
-- Bun as package manager
-- Basic layout exists in src/routes/+layout.svelte (minimal)
-- Custom CSS utilities already defined for buttons, cards, containers
-- Current page has basic content but no grid structure
-
-**Implementation Decision:**
-Rather than adding svelte-grid or svelte-grid-responsive as external dependencies, we should leverage Tailwind CSS v4's excellent built-in grid system. This approach is:
-- More lightweight (no additional dependencies)
-- Consistent with existing Tailwind setup
-- Provides excellent responsive capabilities
-- Industry standard approach
-
-**Implementation Plan:**
-1. Create a reusable Grid component using Tailwind CSS grid utilities
-2. Set up responsive breakpoints and grid configurations
-3. Implement the grid system in the main layout
-4. Create utility classes for common grid patterns
-5. Test responsive behavior across breakpoints
-
-**Next Steps:**
-- Create src/lib/components/Grid.svelte component
-- Update layout to use the new grid system
-- Add responsive grid utilities to app.css
-</info added on 2025-06-07T02:26:16.718Z>
-<info added on 2025-06-07T02:30:05.327Z>
-## Issue Identified: Grid Layout Not Working
-
-**Problem:** Grid components are not rendering properly - items are stacking vertically without spacing instead of displaying in a responsive grid layout.
-
-**Debugging needed:**
-1. Check if Tailwind grid classes are being applied
-2. Verify Grid component functionality
-3. Test CSS output and class generation
-</info added on 2025-06-07T02:30:05.327Z>
-<info added on 2025-06-07T02:32:03.259Z>
-## Issue Resolution Applied ✅
-
-**Root Cause Identified:** Dynamic class generation in Grid component wasn't working with Tailwind CSS's purging system.
-
-**Fixes Applied:**
-1. **Grid.svelte Component Fixed:**
-   - Replaced dynamic string interpolation (`grid-cols-${cols.sm}`) with explicit class mappings
-   - Added proper TypeScript typing with `Record<number, string>` 
-   - Now uses explicit class names that Tailwind can detect during build
-
-2. **CSS Classes Added:**
-   - Added explicit grid column classes (.grid-cols-1 through .grid-cols-6)
-   - Added responsive variants (md:, lg:, xl:) for all column counts
-   - Ensures classes are available regardless of dynamic generation
-
-3. **Test Page Created:**
-   - Added hardcoded grid test section (guaranteed to work)
-   - Added Grid component test section (to verify component functionality)
-   - Side-by-side comparison to isolate any remaining issues
-
-**Expected Result:** 
-- Hardcoded grid section should now display proper responsive grid layout
-- Grid component should now generate correct classes and display properly
-- Proper spacing and responsive behavior across all breakpoints
-
-**Status:** Fixes applied, ready for testing. The responsive grid system should now be fully functional.
-</info added on 2025-06-07T02:32:03.259Z>
-<info added on 2025-06-07T02:33:11.790Z>
-## Progress Update: Partial Success ✅❌
-
-**What's Working:**
-- Hardcoded grid test shows perfect 4-column responsive layout with spacing
-- CSS classes are correctly available and functional
-- Container and basic layout structure working properly
-
-**Issue Remaining:**
-- Grid component is not applying classes correctly - shows vertical stack instead of grid
-- Component is not generating the expected CSS classes
-
-**Next Steps:**
-- Debug Grid component class generation
-- Inspect actual rendered classes in browser dev tools
-- Fix component logic to match hardcoded implementation
-</info added on 2025-06-07T02:33:11.790Z>
-<info added on 2025-06-07T02:50:46.122Z>
-## ✅ SUBTASK COMPLETED SUCCESSFULLY!
-
-**Final Resolution:**
-- User identified and fixed the `$derived()` syntax issue by using `$derived.by()` instead
-- Grid component now working correctly with proper class generation
-- Both hardcoded and component grid sections displaying identically
-- Responsive grid system fully functional across all breakpoints
-
-**Deliverables Completed:**
-✅ Grid.svelte component with responsive column configuration
-✅ Container.svelte component with responsive padding/sizing  
-✅ Explicit CSS classes for all grid variants (1-6 columns, all breakpoints)
-✅ Mobile-first responsive design principles implemented
-✅ TypeScript interfaces and proper prop handling
-✅ Working grid system using Tailwind CSS utilities
-✅ No external dependencies added (pure Tailwind approach)
-
-**Status:** Responsive grid system implementation COMPLETE and ready for production use.
-</info added on 2025-06-07T02:50:46.122Z>
-
-## 2. Header/navigation component [done]
+## 2. Login Form UI with Validation [done]
 ### Dependencies: 3.1
-### Description: Create a responsive header with navigation elements
+### Description: Design and implement the login form with client-side validation
 ### Details:
-Develop a header component that integrates with the grid system. Implement navigation elements that adapt to different screen sizes. Ensure the header is properly positioned within the grid layout and maintains consistency across all pages.
-<info added on 2025-06-07T16:37:40.947Z>
-## Starting Header/Navigation Component Implementation
+Create a form with email/username and password fields. Implement client-side validation to check for empty fields, valid email format, and password requirements. Add visual feedback for validation errors. Use the enhance function for progressive enhancement of the form submission.
 
-**Task Overview:**
-- Create responsive header with navigation elements  
-- Integrate with existing grid system (Container component)
-- Ensure mobile-first responsive design
-- Position properly within layout structure
-- Maintain consistency across all pages
-
-**Implementation Plan:**
-1. Create Header.svelte component using Container for consistent layout
-2. Implement responsive navigation menu (desktop/mobile variants)
-3. Add mobile hamburger menu functionality
-4. Integrate into main layout (+layout.svelte)
-5. Style with Tailwind CSS following project patterns
-6. Test responsive behavior across breakpoints
-
-**Starting implementation...**
-</info added on 2025-06-07T16:37:40.947Z>
-<info added on 2025-06-07T16:39:28.705Z>
-## Header/Navigation Component Implementation COMPLETE! ✅
-
-**Components Created:**
-1. **Header.svelte** - Comprehensive responsive header component with:
-   - Logo/brand area with "Code-Sub" branding
-   - Desktop navigation menu (Home, Services, About, Contact)
-   - Mobile hamburger menu with smooth toggle animation
-   - Primary CTA buttons ("Get Started")
-   - Sticky positioning (top-0 z-50)
-   - Accessibility features (aria-labels, focus states)
-
-**Integration Completed:**
-- ✅ Uses Container component for consistent layout/padding
-- ✅ Exported from lib components system
-- ✅ Integrated into main +layout.svelte 
-- ✅ Applied to all pages via layout inheritance
-
-**Responsive Features:**
-- ✅ Mobile-first design principles
-- ✅ Desktop navigation (hidden on mobile)
-- ✅ Mobile menu (hamburger icon, slide-down menu)
-- ✅ Responsive logo (full name hidden on small screens)
-- ✅ Touch-friendly button sizes
-- ✅ Smooth transitions and hover states
-
-**Page Layout Enhanced:**
-- Updated +layout.svelte with proper structure
-- Improved homepage with Hero, Services, and CTA sections
-- Demonstrating Grid component usage in realistic context
-- Professional styling with consistent design system
-
-**Status:** Header/navigation component fully functional and production-ready!
-</info added on 2025-06-07T16:39:28.705Z>
-<info added on 2025-06-07T16:41:05.264Z>
-## Layout Padding Issue Identified
-
-**Problem:** Content extends to browser window edges without outer padding/margin, creating a cramped appearance.
-
-**Solution:** Add responsive padding to main layout wrapper while preserving full-width design elements where appropriate.
-
-**Implementing fix...**
-</info added on 2025-06-07T16:41:05.264Z>
-
-## 3. Footer component [done]
+## 3. Pocketbase Authentication Logic [done]
 ### Dependencies: 3.1
-### Description: Design and implement a responsive footer component
+### Description: Implement server-side authentication using Pocketbase
 ### Details:
-Create a footer component that works with the grid system. Include necessary content sections (links, copyright, contact info) and ensure it responds appropriately to different screen sizes and maintains proper positioning at the bottom of the layout.
-<info added on 2025-06-07T16:48:13.921Z>
-**Task Overview:**
-- Create responsive footer component with multiple content sections
-- Integrate with existing Grid/Container system for consistency  
-- Include links, contact info, copyright sections
-- Match header padding patterns and responsive behavior
-- Position at bottom of layout structure
+Set up Pocketbase client connection in the server context. Create authentication functions to handle user login requests. Implement proper error handling for authentication failures (invalid credentials, server errors, etc.). Return appropriate responses based on authentication results.
 
-**Implementation Plan:**
-1. Create Footer.svelte component with consistent padding approach
-2. Implement responsive grid layout for footer sections
-3. Add footer content (navigation links, contact, social, copyright)
-4. Export component and integrate into main layout
-5. Style with Tailwind CSS following project patterns
-6. Test responsive behavior and positioning
-
-**Starting implementation...**
-</info added on 2025-06-07T16:48:13.921Z>
-<info added on 2025-06-07T16:52:11.928Z>
-## Footer Layout Issue RESOLVED ✅
-
-**Problem:** "Legal" column was wrapping to new line instead of staying next to "Resources"
-
-**Solution Applied:**
-- Changed from Grid component to direct Tailwind CSS grid for more control
-- Adjusted grid layout: `grid-cols-1 md:grid-cols-2 lg:grid-cols-6`
-- Company info section spans 2 columns on desktop (`lg:col-span-2`)
-- Remaining 4 columns accommodate all navigation sections in one row
-- This ensures Legal stays next to Resources without wrapping
-
-**Final Layout Structure:**
-- Mobile: Single column (everything stacked)
-- Tablet: 2 columns (company info spans 2, navigation sections stack)
-- Desktop: 6 columns (company info: 2 cols, navigation: 4 cols = 1 each)
-
-**Status:** Footer component layout optimized and fully functional!
-</info added on 2025-06-07T16:52:11.928Z>
-
-## 4. Mobile-first layout adaptation [done]
-### Dependencies: 3.1, 3.2, 3.3
-### Description: Refine the layout for mobile devices and implement responsive behavior
+## 4. Session and Auth Store Management [done]
+### Dependencies: 3.3
+### Description: Create and manage authentication state using Svelte stores
 ### Details:
-Apply mobile-first principles to the existing components. Test and adjust breakpoints for various device sizes. Implement any necessary conditional rendering or component variations based on screen size. Ensure smooth transitions between different viewport sizes.
-<info added on 2025-06-07T16:56:58.411Z>
-Starting Mobile-First Layout Adaptation
+Create a Svelte store to manage authentication state. Implement functions to update the store when a user logs in or out. Set up session cookies or localStorage for persistent authentication. Ensure the auth state is accessible throughout the application.
 
-**Task Overview:**
-- Refine and optimize mobile experience across all components
-- Ensure consistent responsive behavior and breakpoints
-- Test layout adaptation across different device sizes
-- Add missing mobile-specific optimizations
-- Improve transitions between viewport sizes
+## 5. Error Handling and User Messaging [done]
+### Dependencies: 3.2, 3.3
+### Description: Implement comprehensive error handling and user feedback
+### Details:
+Create a system for displaying authentication errors to users. Implement success messages for successful login. Handle different error scenarios (network issues, invalid credentials, server errors). Ensure error messages are clear and actionable for users.
 
-**Current State Analysis:**
-✅ Grid system - Already mobile-first with responsive breakpoints
-✅ Header - Has mobile hamburger menu and responsive behavior  
-✅ Footer - Responsive grid layout with mobile stacking
-✅ Container - Responsive padding system
-✅ Page layout - Basic responsive structure
-
-**Optimization Plan:**
-1. Review and standardize breakpoints across components
-2. Enhance mobile navigation experience
-3. Optimize typography and spacing for mobile
-4. Add smooth transitions and animations
-5. Test and refine across multiple device sizes
-6. Ensure touch-friendly interactions
-
-**Starting systematic review and optimization...**
-</info added on 2025-06-07T16:56:58.411Z>
-<info added on 2025-06-07T16:59:43.490Z>
-## Mobile-First Layout Adaptation COMPLETE! ✅
-
-**Mobile Optimizations Applied:**
-
-1. **Enhanced Header/Navigation:**
-   - Improved mobile menu animations and transitions
-   - Added shadow and background to mobile menu for better visibility
-   - Enhanced mobile menu UX with smooth animations
-
-2. **Typography & Spacing Optimization:**
-   - Progressive text scaling: text-3xl → sm:text-4xl → md:text-5xl → lg:text-6xl
-   - Improved line-height and spacing (leading-tight, leading-relaxed)
-   - Responsive margin/padding adjustments for better mobile density
-
-3. **Touch-Friendly Button Design:**
-   - Minimum 44px height for accessibility compliance
-   - Full-width buttons on mobile, auto-width on larger screens
-   - Enhanced tap targets and touch feedback
-   - Disabled text selection for better touch interaction
-
-4. **Mobile-Specific CSS Enhancements:**
-   - Added touch-scrolling support (-webkit-overflow-scrolling: touch)
-   - Implemented 44px minimum touch targets for all interactive elements
-   - Enhanced navigation padding on mobile (12px 16px)
-   - Added smooth transitions with reduced motion support
-   - Safe area inset handling for modern mobile devices
-
-5. **Responsive Layout Improvements:**
-   - Progressive section padding: py-12 → sm:py-16 → lg:py-24
-   - Better button layout with flex centering and proper spacing
-   - Optimized CTA section with constrained button width on mobile
-   - Enhanced Grid component with mobile scroll optimizations
-
-6. **Breakpoint Standardization:**
-   - Consistent use of sm: (640px), md: (768px), lg: (1024px) breakpoints
-   - Progressive enhancement approach throughout
-   - Mobile-first CSS with desktop enhancement
-
-**Mobile UX Features:**
-✅ Touch-friendly 44px minimum interactive elements
-✅ Smooth scrolling and enhanced transitions  
-✅ Proper viewport configuration in app.html
-✅ Reduced motion preference support
-✅ Safe area inset handling for iOS devices
-✅ Full-width buttons on mobile with proper spacing
-✅ Optimized typography scaling across devices
-✅ Enhanced mobile navigation experience
-
-**Status:** Mobile-first layout adaptation fully implemented and optimized!
-</info added on 2025-06-07T16:59:43.490Z>
+## 6. Responsive and Consistent Styling [done]
+### Dependencies: 3.2, 3.5
+### Description: Style the login page to be responsive and match the application design
+### Details:
+Apply consistent styling to match the application's design system. Ensure the login form is responsive across different device sizes. Add appropriate animations for form submission and feedback. Implement accessibility features (proper contrast, focus states, ARIA attributes).
 

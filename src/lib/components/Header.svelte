@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Container } from '$lib';
 	import { page } from '$app/stores';
+	import { currentUser, pb } from '$lib/pocketbase';
+	import { goto } from '$app/navigation';
 
 	const navLinks = [
 		{ href: '/services', text: 'Services' },
@@ -38,6 +40,13 @@
 			mobileMenuOpen = false;
 		}
 	}
+
+	function handleLogout() {
+		pb.authStore.clear();
+		// The currentUser store will update automatically via the onChange handler in pocketbase.ts
+		closeMobileMenu();
+		goto('/');
+	}
 </script>
 
 <header class="bg-white shadow-md sticky top-0 z-50">
@@ -65,18 +74,34 @@
 
 			<!-- Account & CTA -->
 			<div class="hidden md:flex items-center space-x-4">
-				<a 
-					href="/account"
-					class="transition-colors"
-					class:text-blue-600={$page.url.pathname === '/account'}
-					class:text-gray-600={$page.url.pathname !== '/account'}
-					class:hover:text-blue-600={$page.url.pathname !== '/account'}
-				>
-					Sign In
-				</a>
-				<a href="/contact" class="btn btn-primary px-4 py-2 text-sm">
-					Get a Quote
-				</a>
+				{#if $currentUser}
+					<span class="text-gray-600 text-sm">Welcome, {$currentUser.name || $currentUser.email}</span>
+					<a
+						href="/account"
+						class="transition-colors"
+						class:text-blue-600={$page.url.pathname === '/account'}
+						class:text-gray-600={$page.url.pathname !== '/account'}
+						class:hover:text-blue-600={$page.url.pathname !== '/account'}
+					>
+						Account
+					</a>
+					<button onclick={handleLogout} class="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+						Logout
+					</button>
+				{:else}
+					<a
+						href="/login"
+						class="transition-colors"
+						class:text-blue-600={$page.url.pathname === '/login'}
+						class:text-gray-600={$page.url.pathname !== '/login'}
+						class:hover:text-blue-600={$page.url.pathname !== '/login'}
+					>
+						Sign In
+					</a>
+					<a href="/contact" class="btn btn-primary px-4 py-2 text-sm">
+						Get a Quote
+					</a>
+				{/if}
 			</div>
 
 			<!-- Mobile menu button -->
@@ -129,17 +154,27 @@
 			</div>
 			<div class="pt-4 pb-3 border-t border-gray-200">
 				<div class="flex items-center px-5">
-					<a 
-						href="/account" 
-						onclick={() => mobileMenuOpen = false} 
-						class="flex-grow text-base font-medium p-2 rounded-md"
-						class:bg-blue-50={$page.url.pathname === '/account'}
-						class:text-blue-700={$page.url.pathname === '/account'}
-						class:text-gray-700={$page.url.pathname !== '/account'}
-						class:hover:text-gray-900={$page.url.pathname !== '/account'}
-						class:hover:bg-gray-50={$page.url.pathname !== '/account'}
-					>Sign In</a>
-					<a href="/contact" onclick={() => mobileMenuOpen = false} class="ml-4 btn btn-primary w-full">Get a Quote</a>
+					{#if $currentUser}
+						<div class="flex-grow">
+							<div class="text-base font-medium text-gray-800">{$currentUser.name || $currentUser.email}</div>
+							<div class="text-sm font-medium text-gray-500">{$currentUser.email}</div>
+						</div>
+						<button onclick={handleLogout} class="ml-4 text-sm text-gray-600 hover:text-blue-600 transition-colors p-2 rounded-md hover:bg-gray-100">
+							Logout
+						</button>
+					{:else}
+						<a 
+							href="/login" 
+							onclick={() => mobileMenuOpen = false} 
+							class="flex-grow text-base font-medium p-2 rounded-md"
+							class:bg-blue-50={$page.url.pathname === '/login'}
+							class:text-blue-700={$page.url.pathname === '/login'}
+							class:text-gray-700={$page.url.pathname !== '/login'}
+							class:hover:text-gray-900={$page.url.pathname !== '/login'}
+							class:hover:bg-gray-50={$page.url.pathname !== '/login'}
+						>Sign In</a>
+						<a href="/contact" onclick={() => mobileMenuOpen = false} class="ml-4 btn btn-primary w-full">Get a Quote</a>
+					{/if}
 				</div>
 			</div>
 		</div>
