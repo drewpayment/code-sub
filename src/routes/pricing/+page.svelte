@@ -5,27 +5,48 @@
 
   const pricingTiers = [
     {
-      name: 'Essential',
-      description: 'Core features for a professional online presence.',
+      name: 'Essential Care',
+      description: 'Reliable hosting and core maintenance for a secure online presence.',
       price: '49',
-      features: ['Up to 5 pages', 'Responsive Design', 'Basic SEO Setup'],
-      href: '/contact?plan=essential',
+      features: [
+        'Website hosting & uptime monitoring',
+        'SSL certificate management',
+        'Regular security updates',
+        'Monthly backups',
+        'Basic tech stack updates',
+        'Email support'
+      ],
+      href: '/contact?plan=essential-care'
     },
     {
-      name: 'Enhanced',
-      description: 'Advanced features for growing businesses.',
+      name: 'Professional Care',
+      description: 'Proactive support and optimization for growing businesses.',
       price: '99',
-      features: ['Everything in Essential, plus:', 'Up to 15 pages', 'CMS Integration', 'Advanced Analytics'],
-      href: '/contact?plan=enhanced',
-      popular: true,
+      features: [
+        'Everything in Essential Care',
+        'Content updates (2 hours/month)',
+        'Performance monitoring & optimization',
+        'Basic SEO health checks',
+        'Google Analytics setup',
+        'Priority email support'
+      ],
+      href: '/contact?plan=professional-care',
+      popular: true
     },
     {
-      name: 'Premium',
-      description: 'Complete solutions for large-scale projects.',
+      name: 'Premium Care',
+      description: 'Comprehensive support and strategic insights for established businesses.',
       price: '199',
-      features: ['Everything in Enhanced, plus:', 'E-commerce Functionality', 'Priority Support', 'Monthly Performance Reports'],
-      href: '/contact?plan=premium',
-    },
+      features: [
+        'Everything in Professional Care',
+        'Extended content updates (4 hours/month)',
+        'Monthly performance reports',
+        'Advanced SEO optimization',
+        'Emergency response (4hr)',
+        'Phone support'
+      ],
+      href: '/contact?plan=premium-care'
+    }
   ];
 
   const faqItems = [
@@ -41,7 +62,31 @@
       question: 'What if I need more than the Premium plan offers?',
       answer: 'We offer custom solutions for large-scale projects with unique requirements. Contact us to discuss your needs.'
     }
-  ]
+  ];
+
+  const comparisonFeatures = [
+    {
+      name: 'Hosting & Uptime Monitoring',
+      tiers: { essential: true, professional: true, premium: true }
+    },
+    { name: 'Security & Backups', tiers: { essential: true, professional: true, premium: true } },
+    {
+      name: 'Content Updates',
+      tiers: { essential: '—', professional: '2 hrs/mo', premium: '4 hrs/mo' }
+    },
+    {
+      name: 'Performance Optimization',
+      tiers: { essential: false, professional: true, premium: true }
+    },
+    { name: 'Basic SEO Checks', tiers: { essential: false, professional: true, premium: true } },
+    { name: 'Advanced SEO', tiers: { essential: false, professional: false, premium: true } },
+    {
+      name: 'Monthly Performance Reports',
+      tiers: { essential: false, professional: false, premium: true }
+    },
+    { name: 'Priority Support', tiers: { essential: false, professional: true, premium: true } },
+    { name: 'Phone Support', tiers: { essential: false, professional: false, premium: true } }
+  ];
 </script>
 
 <div class="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 lg:px-8">
@@ -66,47 +111,35 @@
     <div class="mt-24">
       <h2 class="text-3xl font-bold text-center text-gray-900">Feature Comparison</h2>
       <div class="mt-8 max-w-4xl mx-auto">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
+        <div class="overflow-x-auto rounded-lg border border-gray-200">
+          <table class="w-full text-left border-collapse bg-white">
             <thead>
               <tr>
-                <th class="py-4 pr-6 font-semibold text-lg">Feature</th>
+                <th class="py-4 px-6 font-semibold text-lg">Feature</th>
                 <th class="w-1/4 py-4 px-6 font-semibold text-lg text-center">Essential</th>
-                <th class="w-1/4 py-4 px-6 font-semibold text-lg text-center">Enhanced</th>
+                <th class="w-1/4 py-4 px-6 font-semibold text-lg text-center">Professional</th>
                 <th class="w-1/4 py-4 px-6 font-semibold text-lg text-center">Premium</th>
               </tr>
             </thead>
             <tbody>
-              <tr class="border-t border-gray-200">
-                <td class="py-4 pr-6">Number of Pages</td>
-                <td class="py-4 px-6 text-center">Up to 5</td>
-                <td class="py-4 px-6 text-center">Up to 15</td>
-                <td class="py-4 px-6 text-center">Unlimited</td>
-              </tr>
-              <tr class="border-t border-gray-200">
-                <td class="py-4 pr-6">CMS Integration</td>
-                <td class="py-4 px-6 text-center text-gray-400">&mdash;</td>
-                <td class="py-4 px-6 text-center text-green-500">✓</td>
-                <td class="py-4 px-6 text-center text-green-500">✓</td>
-              </tr>
-              <tr class="border-t border-gray-200">
-                <td class="py-4 pr-6">Advanced Analytics</td>
-                <td class="py-4 px-6 text-center text-gray-400">&mdash;</td>
-                <td class="py-4 px-6 text-center text-green-500">✓</td>
-                <td class="py-4 px-6 text-center text-green-500">✓</td>
-              </tr>
-              <tr class="border-t border-gray-200">
-                <td class="py-4 pr-6">E-commerce</td>
-                <td class="py-4 px-6 text-center text-gray-400">&mdash;</td>
-                <td class="py-4 px-6 text-center text-gray-400">&mdash;</td>
-                <td class="py-4 px-6 text-center text-green-500">✓</td>
-              </tr>
-               <tr class="border-t border-gray-200">
-                <td class="py-4 pr-6">Priority Support</td>
-                <td class="py-4 px-6 text-center text-gray-400">&mdash;</td>
-                <td class="py-4 px-6 text-center text-gray-400">&mdash;</td>
-                <td class="py-4 px-6 text-center text-green-500">✓</td>
-              </tr>
+              {#each comparisonFeatures as feature}
+                <tr class="border-t border-gray-200">
+                  <td class="py-4 px-6">{feature.name}</td>
+                  {#each ['essential', 'professional', 'premium'] as tierKey}
+                    <td class="py-4 px-6 text-center">
+                      {#if typeof feature.tiers[tierKey] === 'boolean'}
+                        {#if feature.tiers[tierKey]}
+                          <span class="text-green-500 text-xl">✓</span>
+                        {:else}
+                          <span class="text-gray-400 text-xl">&mdash;</span>
+                        {/if}
+                      {:else}
+                        {feature.tiers[tierKey]}
+                      {/if}
+                    </td>
+                  {/each}
+                </tr>
+              {/each}
             </tbody>
           </table>
         </div>
