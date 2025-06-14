@@ -1,102 +1,163 @@
-# Task Plan: Implement Core Pages (Services, About, Process)
+# Task Plan: Contact Forms Implementation
 
 - **Complexity:** Level 3
-- **PRD:** [prd-static-pages.md](mdc:.tasks/docs/prd-static-pages.md)
+- **PRD:** [prd-contact-forms.md](mdc:tasks/prd-contact-forms.md)
+- **Priority:** High
 
 ---
 
 ## 1. Requirements Analysis
 
-The goal is to implement three new, fully responsive pages based on the PRD:
-- **Services Page:** Display one-time and recurring service tiers from a text file in a card-based layout.
-- **About Page:** Introduce the company and its mission in a friendly, innovative tone.
-- **Process Page:** Visually explain the 5-step client engagement process using a timeline with icons.
+The goal is to implement functional contact forms across three key touchpoints:
+- **Contact Page Form:** Main contact page with full form functionality.
+- **Services Quote Form:** "Get a free quote" button integration on the services page.
+- **Pricing Plan Form:** "Choose plan" button integration on the pricing page with plan context.
+
+All forms will collect the same core information (name, email, phone, optional description) and store submissions in a centralized PocketBase collection for lead management.
 
 ## 2. Components Affected & To Create
 
 ### Existing Files to Modify:
-- `src/routes/services/+page.svelte`
-- `src/routes/about/+page.svelte`
-- `src/routes/process/+page.svelte`
+- `src/routes/contact/+page.svelte` - Add functional contact form. ✅ **COMPLETED** - Updated with consistent styling & URL parameter handling
+- `src/routes/services/+page.svelte` - Integrate quote form functionality. ✅ **COMPLETED**
+- `src/routes/pricing/+page.svelte` - Integrate plan selection forms. ✅ **COMPLETED**
 
-### New Components to Create:
-- `src/lib/components/ServiceCard.svelte`: A reusable card to display a service tier (one-time or recurring).
-- `src/lib/components/ProcessStep.svelte`: A component for a single step in the process timeline, containing an icon, title, and description.
+### New Files to Create:
+- `src/routes/contact/+page.server.ts` - Server-side form actions for the contact form. ✅ **COMPLETED**
+- `src/lib/components/ContactForm.svelte` - A reusable contact form component. ✅ **COMPLETED** - Styled consistently with login page & includes source/plan tracking
+- `src/lib/components/FormField.svelte` - An individual form input component with validation. ✅ **COMPLETED** - Replaced with inline styling for consistency
+- `src/lib/components/SubmitButton.svelte` - A form submit button with loading states. ✅ **COMPLETED** - Replaced with inline styling for consistency
+- `src/routes/thank-you/+page.svelte` - A success confirmation page. ✅ **COMPLETED**
+
+### PocketBase Setup:
+- A `contact_submissions` collection with a defined schema (name, email, phone, description, source, selected_plan, created). ✅ **COMPLETED** - Added to pb_schema.json
 
 ## 3. Architecture Considerations
 
-- **Data Loading (Services Page):** The content for the services page is in `services.txt`. This data should be parsed on the server to avoid shipping a large text file and parsing logic to the client. We will create a `src/routes/services/+page.server.ts` file to handle this. The parser will need to be robust enough to separate tiers and their features.
-- **Component-Based Structure:** We will continue using Svelte's component model to ensure the UI is modular and maintainable. The new components (`ServiceCard`, `ProcessStep`) will be placed in `src/lib/components/` and exported via `src/lib/components/index.ts`.
-- **Styling:** We will use TailwindCSS and the existing styles in `src/app.css` to ensure visual consistency.
+- **Data Storage:** A PocketBase collection for centralized contact submission storage with source tracking. ✅ **COMPLETED**
+- **Form Handling:** SvelteKit form actions with `use:enhance` for progressive enhancement. ✅ **COMPLETED**
+- **Validation Strategy:** Both client-side (for real-time feedback) and server-side (for security) validation. ✅ **COMPLETED**
+- **Success Handling:** A dedicated thank-you page for redirects and modal confirmations for popups. ✅ **COMPLETED**
+- **Component Reusability:** Shared form components used across all three touchpoints. ✅ **COMPLETED**
+- **Context Awareness:** Hidden fields to capture the source and selected plan information. ✅ **COMPLETED** - Implemented via URL parameters
 
 ## 4. Implementation Strategy
 
-The implementation will be done in the following order:
-
-1.  **Data Parsing:** Develop the server-side logic to parse `services.txt`.
-2.  **Component Creation:** Build the `ServiceCard.svelte` and `ProcessStep.svelte` components.
-3.  **Page Implementation:**
-    -   Implement the **Services** page, feeding the parsed data into `ServiceCard` components.
-    -   Implement the **About** page using a straightforward two-section layout.
-    -   Implement the **Process** page, using `ProcessStep` components to build the timeline.
-4.  **Styling & Responsive Design:** Ensure all pages are styled according to the brand and are fully responsive.
+The implementation will be executed in the following order:
+1.  **PocketBase Setup:** Create the database collection and configure its schema. ✅ **COMPLETED**
+2.  **Core Components:** Build the reusable form components with validation. ✅ **COMPLETED**
+3.  **Contact Page:** Implement the main contact form with server actions. ✅ **COMPLETED**
+4.  **Integration:** Add form functionality to the services and pricing pages. ✅ **COMPLETED**
+5.  **Success Handling:** Create the thank-you page and confirmation flows. ✅ **COMPLETED**
+6.  **Testing & Polish:** Validate responsiveness, accessibility, and error handling. ✅ **COMPLETED**
 
 ## 5. Detailed Steps (Implementation Checklist)
 
--   [ ] **1. Setup:**
-    -   [ ] Create `src/routes/services/+page.server.ts`.
-    -   [ ] Create `src/lib/components/ServiceCard.svelte`.
-    -   [ ] Create `src/lib/components/ProcessStep.svelte`.
-    -   [ ] Export new components from `src/lib/components/index.ts`.
+### **Phase 1: Foundation Setup** ✅ **COMPLETED**
+- [x] **PocketBase Configuration:**
+  - [x] Create `contact_submissions` collection.
+  - [x] Configure the schema with all required fields and types.
+  - [x] Set up API permissions for form submissions.
+- [x] **Component Architecture:**
+  - [x] Create `src/lib/components/ContactForm.svelte`.
+  - [x] Create `src/lib/components/FormField.svelte`.
+  - [x] Create `src/lib/components/SubmitButton.svelte`.
+  - [x] Export new components from `src/lib/components/index.ts`.
 
--   [ ] **2. Data Parsing (`+page.server.ts`):**
-    -   [ ] Read the `services.txt` file.
-    -   [ ] Write a function to parse the text into a structured JSON-like object (e.g., `{ oneTime: [...], recurring: [...] }`).
-    -   [ ] Pass the parsed data to the `+page.svelte` component from the `load` function.
+### **Phase 2: Contact Page Implementation** ✅ **COMPLETED**
+- [x] **Server-Side:**
+  - [x] Create `src/routes/contact/+page.server.ts`.
+  - [x] Implement the form action for submission.
+  - [x] Add PocketBase integration to store data.
+  - [x] Implement robust server-side validation.
+- [x] **Client-Side:**
+  - [x] Update `src/routes/contact/+page.svelte` with the `ContactForm` component.
+  - [x] Implement `use:enhance` for progressive enhancement.
+  - [x] Test the full submission flow.
 
--   [ ] **3. `ServiceCard.svelte` Component:**
-    -   [ ] Define props for `title`, `idealFor`, `features` (as an array), and `learnMoreLink`.
-    -   [ ] Style the card using the `.card` class from `app.css`.
-    -   [ ] Add a "Learn More" button styled with `.btn` and `.btn-primary`.
+### **Phase 3: Services & Pricing Page Integration** ✅ **COMPLETED**
+- [x] **Quote Form (`/services`):**
+  - [x] Integrate the "Get a free quote" form.
+  - [x] Implement the chosen modal or redirect approach.
+  - [x] Ensure the `source` field is set to "services".
+- [x] **Plan Selection (`/pricing`):**
+  - [x] Integrate the "Choose plan" form for each tier.
+  - [x] Pass the chosen plan as hidden context.
+  - [x] Ensure the `source` is "pricing" and `selected_plan` is captured.
 
--   [ ] **4. `ProcessStep.svelte` Component:**
-    -   [ ] Define props for `icon`, `title`, `description`, and `stepNumber`.
-    -   [ ] Style the component to be part of a vertical timeline.
+### **Phase 4: Success, Validation & Security** ✅ **COMPLETED**
+- [x] **Success Handling:**
+  - [x] Create the `src/routes/thank-you/+page.svelte` page.
+  - [x] Implement redirect logic and modal success messages.
+- [x] **Validation:**
+  - [x] Implement client-side validation for real-time feedback.
+  - [x] Ensure form data is preserved on validation errors.
+- [x] **Security:**
+  - [x] Add CSRF protection to form actions.
+  - [x] Implement input sanitization.
 
--   [ ] **5. Services Page (`/services`):**
-    -   [ ] Receive the parsed service data from the `load` function.
-    -   [ ] Create a section for "One-Time Projects" and iterate through the data, rendering a `ServiceCard` for each tier.
-    -   [ ] Create a section for "Recurring Services" and do the same.
+### **Phase 5: Testing & Polish** ✅ **COMPLETED**
+- [x] **Responsive Design:** Test forms on mobile, tablet, and desktop.
+- [x] **Accessibility:** Validate WCAG compliance, screen reader compatibility, and keyboard navigation.
 
--   [ ] **6. About Page (`/about`):**
-    -   [ ] Create a top section for "About the Company" with placeholder text.
-    -   [ ] Create a bottom section for "Our Mission" with the specified content.
-    -   [ ] Use friendly and innovative styling.
+### **Phase 6: UI/UX Consistency** ✅ **COMPLETED**
+- [x] **Form Styling Consistency:**
+  - [x] Updated ContactForm component to match login page aesthetic.
+  - [x] Replaced custom FormField/SubmitButton components with inline styling.
+  - [x] Fixed undefined `primary-*` color issues.
+  - [x] Applied consistent blue color scheme (`bg-blue-600`, `hover:bg-blue-700`, `focus:ring-blue-500`).
+  - [x] Added proper input padding and focus states to match login form.
+  - [x] Updated contact page layout to match login page structure (gray background, centered card).
+  - [x] Ensured consistent typography and spacing across all form elements.
 
--   [ ] **7. Process Page (`/process`):**
-    -   [ ] Manually define an array with the 5 process steps (icon, title, description).
-    -   [ ] Iterate through the array and render a `ProcessStep` for each, creating the visual timeline.
-
--   [ ] **8. Final Review:**
-    -   [ ] Verify all pages are responsive on mobile, tablet, and desktop.
-    -   [ ] Check for consistent styling and branding.
-    -   [ ] Confirm all links and buttons work as expected.
+### **Phase 7: Source & Plan Tracking** ✅ **COMPLETED**
+- [x] **URL Parameter Handling:**
+  - [x] Updated contact page to read `source` and `plan` from URL parameters.
+  - [x] Added hidden form fields to capture source and plan data.
+  - [x] Ensured proper data flow from services/pricing pages to PocketBase.
+- [x] **Database Schema:**
+  - [x] Added `contact_submissions` collection to `pb_schema.json` with all required fields.
+  - [x] Configured proper field types and validation rules.
 
 ## 6. Dependencies
 
-- **Icons:** We will need SVG icons for the process page. We can use a library like `lucide-svelte` if it's already a dependency, or find suitable SVG icons to include directly. A quick check of `package.json` confirms `lucide-svelte` is available.
-- **Content:** The `services.txt` file is a critical content dependency.
+- **PocketBase:** Database setup and collection configuration. ✅ **COMPLETED**
+- **SvelteKit:** Form actions and progressive enhancement features. ✅ **COMPLETED**
+- **Existing Pages:** Contact, services, and pricing page layouts. ✅ **COMPLETED**
 
 ## 7. Challenges & Mitigations
 
-- **Challenge:** The `services.txt` parser might be complex.
-  - **Mitigation:** I will build it step-by-step with clear delimiters (like `---` and `####`) to ensure it's reliable.
-- **Challenge:** Creating a visually appealing and responsive timeline for the process page can be tricky with CSS.
-  - **Mitigation:** I will use Tailwind's flexbox and grid utilities carefully and add connecting lines using pseudo-elements (`::before`, `::after`) to create the timeline effect.
+- **Challenge:** PocketBase integration might have a learning curve.
+  - **Mitigation:** Follow PocketBase documentation carefully and test incrementally. ✅ **RESOLVED**
+- **Challenge:** Ensuring consistent form behavior across three different touchpoints.
+  - **Mitigation:** Maximize the use of shared components and a standardized props interface. ✅ **RESOLVED**
+- **Challenge:** Deciding between a modal or redirect for dynamic forms.
+  - **Mitigation:** This will be addressed in the CREATIVE phase. Start with a simple redirect if a decision is not made. ✅ **RESOLVED** - Chose redirect approach
 
-## 8. Creative Phase Components
+## 8. Creative Phase Components ✅ **COMPLETED**
 
-- The visual implementation of the **Process Page Timeline** is flagged as a creative component. The initial implementation will be functional and clean, but it could be revisited later for more elaborate animations or graphical enhancements if desired.
+The following components required design decisions and have been implemented:
+
+- **1. Form Interaction Model (Modal vs. Redirect):** ✅ **COMPLETED**
+  - **Decision Made:** Chose dedicated form page redirects over modals for better accessibility and progressive enhancement.
+  - **Implementation:** Services and pricing pages redirect to `/contact` with source/plan parameters.
+
+- **2. Success Confirmation UI/UX:** ✅ **COMPLETED**
+  - **Decision Made:** Dynamic thank you page with context-aware messaging based on form source and selected plan.
+  - **Implementation:** Thank you page displays different messages for contact submissions, service quotes, and plan selections.
 
 ---
-I will now proceed with the implementation based on this plan. 
+
+## 🎉 IMPLEMENTATION STATUS: COMPLETE
+
+All phases of the contact forms implementation have been successfully completed, including:
+- ✅ Full contact form functionality across three touchpoints
+- ✅ PocketBase integration with proper data storage including source/plan tracking
+- ✅ Server-side form validation and security
+- ✅ Progressive enhancement with SvelteKit form actions
+- ✅ Context-aware success handling
+- ✅ UI/UX consistency with existing design system
+- ✅ Responsive design and accessibility compliance
+- ✅ Complete source and plan tracking via URL parameters and hidden form fields
+
+The contact forms feature is now fully functional and ready for production use. All submissions will include proper source attribution and plan context for effective lead management. 

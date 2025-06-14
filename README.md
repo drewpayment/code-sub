@@ -16,13 +16,13 @@ npx sv create my-app
 
 ## Developing
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Once you've created a project and installed dependencies with `bun install`, start a development server:
 
 ```bash
-npm run dev
+bun run dev
 
 # or start the server and open the app in a new browser tab
-npm run dev -- --open
+bun run dev -- --open
 ```
 
 ## Building
@@ -30,9 +30,21 @@ npm run dev -- --open
 To create a production version of your app:
 
 ```bash
-npm run build
+bun run build
 ```
 
-You can preview the production build with `npm run preview`.
+You can preview the production build with `bun run preview`.
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+
+## Environment Variables
+
+This project uses PocketBase for the contact form submissions. You will need to create a `.env` file in the root of the project and add the following variables:
+
+```
+PB_URL="http://127.0.0.1:8090"
+PB_EMAIL="your-pocketbase-admin-email@example.com"
+PB_PASSWORD="your-pocketbase-admin-password"
+```
+
+Make sure your PocketBase instance is running and you have created a collection named `contact_submissions` with the required schema. You can run `bun run pb:migration` to automatically create the proper migration file, then start/restart PocketBase to apply it.
