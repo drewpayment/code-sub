@@ -51,6 +51,14 @@ DATABASE_URL="postgresql://root:mysecretpassword@localhost:5432/local"
 
 ### 3. Database Setup
 
+Once you've created a project and installed dependencies with `bun install`, start a development server:
+
+```bash
+bun run dev
+
+# or start the server and open the app in a new browser tab
+bun run dev -- --open
+=======
 Start the PostgreSQL database with Docker:
 
 ```bash
@@ -163,9 +171,25 @@ npm run preview
 The project uses SvelteKit's static adapter for optimal performance:
 
 ```bash
-npm run build
+bun run build
 ```
 
+You can preview the production build with `bun run preview`.
+
+> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+
+## Environment Variables
+
+This project uses PocketBase for the contact form submissions. You will need to create a `.env` file in the root of the project and add the following variables:
+
+```
+PB_URL="http://127.0.0.1:8090"
+PB_EMAIL="your-pocketbase-admin-email@example.com"
+PB_PASSWORD="your-pocketbase-admin-password"
+```
+
+Make sure your PocketBase instance is running and you have created a collection named `contact_submissions` with the required schema. You can run `bun run pb:migration` to automatically create the proper migration file, then start/restart PocketBase to apply it.
+=======
 The built application will be in the `build/` directory, ready for deployment to any static hosting service (Netlify, Vercel, Cloudflare Pages, etc.).
 
 ## 🎯 Business Model

@@ -3,6 +3,8 @@
   import PricingCard from '$lib/components/PricingCard.svelte';
   import Faq from '$lib/components/Faq.svelte';
 
+  type TierKey = 'essential' | 'professional' | 'premium';
+
   const pricingTiers = [
     {
       name: 'Essential Care',
@@ -16,7 +18,7 @@
         'Basic tech stack updates',
         'Email support'
       ],
-      href: '/contact?plan=essential-care'
+      href: '/contact?source=pricing&plan=essential-care'
     },
     {
       name: 'Professional Care',
@@ -30,7 +32,7 @@
         'Google Analytics setup',
         'Priority email support'
       ],
-      href: '/contact?plan=professional-care',
+      href: '/contact?source=pricing&plan=professional-care',
       popular: true
     },
     {
@@ -45,7 +47,7 @@
         'Emergency response (4hr)',
         'Phone support'
       ],
-      href: '/contact?plan=premium-care'
+      href: '/contact?source=pricing&plan=premium-care'
     }
   ];
 
@@ -64,7 +66,10 @@
     }
   ];
 
-  const comparisonFeatures = [
+  const comparisonFeatures: {
+    name: string;
+    tiers: Record<TierKey, boolean | string>;
+  }[] = [
     {
       name: 'Hosting & Uptime Monitoring',
       tiers: { essential: true, professional: true, premium: true }
@@ -127,14 +132,14 @@
                   <td class="py-4 px-6">{feature.name}</td>
                   {#each ['essential', 'professional', 'premium'] as tierKey}
                     <td class="py-4 px-6 text-center">
-                      {#if typeof feature.tiers[tierKey] === 'boolean'}
-                        {#if feature.tiers[tierKey]}
+                      {#if typeof feature.tiers[tierKey as TierKey] === 'boolean'}
+                        {#if feature.tiers[tierKey as TierKey]}
                           <span class="text-green-500 text-xl">✓</span>
                         {:else}
                           <span class="text-gray-400 text-xl">&mdash;</span>
                         {/if}
                       {:else}
-                        {feature.tiers[tierKey]}
+                        {feature.tiers[tierKey as TierKey]}
                       {/if}
                     </td>
                   {/each}
