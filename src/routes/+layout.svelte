@@ -6,7 +6,7 @@
 
 	export let data: LayoutData;
 
-	$: currentUser.set(data.user);
+	$: currentUser.set(data.user as any);
 </script>
 
 <svelte:head>

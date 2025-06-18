@@ -76,6 +76,18 @@
 			<div class="hidden md:flex items-center space-x-4">
 				{#if $currentUser}
 					<span class="text-gray-600 text-sm">Welcome, {$currentUser.name || $currentUser.email}</span>
+					<!-- Show admin link for admin users -->
+					{#if $currentUser.role && ['admin', 'super_admin', 'manager', 'employee'].includes($currentUser.role)}
+						<a
+							href="/admin"
+							class="transition-colors"
+							class:text-blue-600={$page.url.pathname.startsWith('/admin')}
+							class:text-gray-600={!$page.url.pathname.startsWith('/admin')}
+							class:hover:text-blue-600={!$page.url.pathname.startsWith('/admin')}
+						>
+							Admin
+						</a>
+					{/if}
 					<a
 						href="/account"
 						class="transition-colors"
@@ -153,13 +165,39 @@
 				{/each}
 			</div>
 			<div class="pt-4 pb-3 border-t border-gray-200">
-				<div class="flex items-center px-5">
+				<div class="px-5 space-y-2">
 					{#if $currentUser}
-						<div class="flex-grow">
+						<div class="pb-3">
 							<div class="text-base font-medium text-gray-800">{$currentUser.name || $currentUser.email}</div>
 							<div class="text-sm font-medium text-gray-500">{$currentUser.email}</div>
 						</div>
-						<button onclick={handleLogout} class="ml-4 text-sm text-gray-600 hover:text-blue-600 transition-colors p-2 rounded-md hover:bg-gray-100">
+						
+						<!-- Admin link for mobile -->
+						{#if $currentUser.role && ['admin', 'super_admin', 'manager', 'employee'].includes($currentUser.role)}
+							<a 
+								href="/admin" 
+								onclick={() => mobileMenuOpen = false} 
+								class="block px-3 py-2 rounded-md text-base font-medium"
+								class:bg-blue-50={$page.url.pathname.startsWith('/admin')}
+								class:text-blue-700={$page.url.pathname.startsWith('/admin')}
+								class:text-gray-700={!$page.url.pathname.startsWith('/admin')}
+								class:hover:text-gray-900={!$page.url.pathname.startsWith('/admin')}
+								class:hover:bg-gray-50={!$page.url.pathname.startsWith('/admin')}
+							>Admin Dashboard</a>
+						{/if}
+						
+						<a 
+							href="/account" 
+							onclick={() => mobileMenuOpen = false} 
+							class="block px-3 py-2 rounded-md text-base font-medium"
+							class:bg-blue-50={$page.url.pathname === '/account'}
+							class:text-blue-700={$page.url.pathname === '/account'}
+							class:text-gray-700={$page.url.pathname !== '/account'}
+							class:hover:text-gray-900={$page.url.pathname !== '/account'}
+							class:hover:bg-gray-50={$page.url.pathname !== '/account'}
+						>Account</a>
+						
+						<button onclick={handleLogout} class="block w-full text-left px-3 py-2 text-base font-medium text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-gray-100">
 							Logout
 						</button>
 					{:else}
