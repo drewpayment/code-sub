@@ -22,7 +22,7 @@
 		"migrate:plans": "node scripts/migrate-pricing-plans.js"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.0.0",
+		"@biomejs/biome": "2.0.5",
 		"@playwright/test": "^1.49.1",
 		"@sveltejs/adapter-auto": "^6.0.0",
 		"@sveltejs/kit": "^2.16.0",
