@@ -78,6 +78,23 @@ export class SubscriptionService {
 		return pb.collection(COLLECTIONS.SUBSCRIPTIONS).delete(id);
 	}
 
+	// Get user's current subscription
+	static async getUserSubscription(userId: string) {
+		try {
+			const result = await pb.collection(COLLECTIONS.SUBSCRIPTIONS).getFirstListItem<Subscription>(
+				`customer_id = "${userId}"`,
+				{
+					expand: 'plan_id',
+					sort: '-created'
+				}
+			);
+			return result;
+		} catch {
+			// No subscription found
+			return null;
+		}
+	}
+
 	// Users/Customers
 	static async getCustomers(options?: {
 		page?: number;
