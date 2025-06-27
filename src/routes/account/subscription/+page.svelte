@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { onMount } from 'svelte';
 
 	let { data, form } = $props();
 
@@ -22,6 +23,12 @@
 				bgColor: 'bg-yellow-100',
 				borderColor: 'border-yellow-200'
 			},
+			overdue: {
+				text: 'Payment Overdue',
+				color: 'text-red-600',
+				bgColor: 'bg-red-100',
+				borderColor: 'border-red-200'
+			},
 			cancelled: {
 				text: 'Cancelled',
 				color: 'text-red-600',
@@ -35,7 +42,7 @@
 				borderColor: 'border-orange-200'
 			}
 		};
-		return statusMap[status] || statusMap.pending;
+		return statusMap[status as keyof typeof statusMap] || statusMap.pending;
 	};
 
 	const statusDisplay = $derived(
@@ -43,6 +50,44 @@
 	);
 
 	let showCancelConfirm = $state(false);
+	let billingHistory: any[] = $state([]);
+	let loadingHistory = $state(false);
+	let showBillingHistory = $state(false);
+
+	// Load billing history when component mounts
+	onMount(async () => {
+		if (data.currentSubscription && data.user.stripe_customer_id) {
+			await loadBillingHistory();
+		}
+	});
+
+	async function loadBillingHistory() {
+		loadingHistory = true;
+		try {
+			const response = await fetch('/api/billing/history');
+			const result = await response.json();
+			if (response.ok) {
+				billingHistory = result.invoices || [];
+			} else {
+				console.error('Failed to load billing history:', result.error);
+			}
+		} catch (error) {
+			console.error('Failed to load billing history:', error);
+		} finally {
+			loadingHistory = false;
+		}
+	}
+
+	function formatCurrency(amount: number, currency: string) {
+		return new Intl.NumberFormat('en-US', {
+			style: 'currency',
+			currency: currency.toUpperCase(),
+		}).format(amount / 100); // Stripe amounts are in cents
+	}
+
+	function formatDate(timestamp: number) {
+		return new Date(timestamp * 1000).toLocaleDateString();
+	}
 </script>
 
 <svelte:head>
@@ -106,15 +151,54 @@
 						</span>
 					</div>
 
-					{#if data.currentSubscription.status === 'active'}
-						<button
-							on:click={() => (showCancelConfirm = true)}
-							class="text-sm font-medium text-red-600 hover:text-red-700"
-						>
-							Cancel Subscription
-						</button>
-					{/if}
+					<div class="flex space-x-3">
+						{#if data.currentSubscription.status === 'pending'}
+							<form method="POST" action="?/createCheckoutSession" use:enhance>
+								<button
+									type="submit"
+									class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+								>
+									Complete Setup & Activate
+								</button>
+							</form>
+						{:else if data.currentSubscription.status === 'overdue'}
+							<form method="POST" action="?/createCheckoutSession" use:enhance>
+								<button
+									type="submit"
+									class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+								>
+									Update Payment Method
+								</button>
+							</form>
+						{:else if data.currentSubscription.status === 'active'}
+							<button
+								on:click={() => (showCancelConfirm = true)}
+								class="text-sm font-medium text-red-600 hover:text-red-700"
+							>
+								Cancel Subscription
+							</button>
+						{/if}
+					</div>
 				</div>
+
+				<!-- Overdue Payment Warning -->
+				{#if data.currentSubscription.status === 'overdue'}
+					<div class="mt-4 rounded-md border border-red-200 bg-red-50 p-4">
+						<div class="flex">
+							<div class="flex-shrink-0">
+								<svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+									<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+								</svg>
+							</div>
+							<div class="ml-3">
+								<h3 class="text-sm font-medium text-red-800">Payment Required</h3>
+								<div class="mt-2 text-sm text-red-700">
+									<p>Your payment is overdue. Please update your payment method to continue using your subscription.</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				{/if}
 
 				<!-- Plan Features -->
 				{#if currentPlan.features}
@@ -135,6 +219,95 @@
 							{/if}
 						</div>
 					</div>
+				{/if}
+			</div>
+		{/if}
+
+		<!-- Billing History (if user has Stripe customer ID) -->
+		{#if data.currentSubscription && data.user.stripe_customer_id}
+			<div class="mb-8 rounded-lg bg-white p-6 shadow-lg">
+				<div class="mb-4 flex items-center justify-between">
+					<h2 class="text-xl font-semibold text-gray-900">Billing History</h2>
+					<button
+						on:click={() => (showBillingHistory = !showBillingHistory)}
+						class="text-sm font-medium text-blue-600 hover:text-blue-700"
+					>
+						{showBillingHistory ? 'Hide' : 'Show'} History
+					</button>
+				</div>
+
+				{#if showBillingHistory}
+					{#if loadingHistory}
+						<div class="py-8 text-center">
+							<div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+							<p class="mt-2 text-sm text-gray-600">Loading billing history...</p>
+						</div>
+					{:else if billingHistory.length === 0}
+						<div class="py-8 text-center">
+							<p class="text-gray-600">No billing history found.</p>
+						</div>
+					{:else}
+						<div class="overflow-hidden">
+							<table class="min-w-full divide-y divide-gray-200">
+								<thead class="bg-gray-50">
+									<tr>
+										<th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+											Date
+										</th>
+										<th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+											Description
+										</th>
+										<th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+											Amount
+										</th>
+										<th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+											Status
+										</th>
+										<th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+											Invoice
+										</th>
+									</tr>
+								</thead>
+								<tbody class="divide-y divide-gray-200 bg-white">
+									{#each billingHistory as invoice}
+										<tr>
+											<td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+												{formatDate(invoice.created)}
+											</td>
+											<td class="px-6 py-4 text-sm text-gray-900">
+												{invoice.description}
+											</td>
+											<td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+												{formatCurrency(invoice.amount_paid, invoice.currency)}
+											</td>
+											<td class="whitespace-nowrap px-6 py-4 text-sm">
+												<span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold
+													{invoice.status === 'paid' ? 'bg-green-100 text-green-800' : 
+													invoice.status === 'open' ? 'bg-yellow-100 text-yellow-800' : 
+													'bg-red-100 text-red-800'}">
+													{invoice.status}
+												</span>
+											</td>
+											<td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+												{#if invoice.hosted_invoice_url}
+													<a 
+														href={invoice.hosted_invoice_url} 
+														target="_blank" 
+														rel="noopener noreferrer"
+														class="text-blue-600 hover:text-blue-700"
+													>
+														View Invoice
+													</a>
+												{:else}
+													<span class="text-gray-400">N/A</span>
+												{/if}
+											</td>
+										</tr>
+									{/each}
+								</tbody>
+							</table>
+						</div>
+					{/if}
 				{/if}
 			</div>
 		{/if}

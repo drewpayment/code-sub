@@ -173,11 +173,11 @@
   },
   {
     "id": "_pb_users_auth_",
-    "listRule": "id = @request.auth.id",
-    "viewRule": "id = @request.auth.id",
+    "listRule": "id = @request.auth.id || @request.auth.role = 'super_admin'",
+    "viewRule": "id = @request.auth.id || @request.auth.role = 'super_admin'",
     "createRule": "",
-    "updateRule": "id = @request.auth.id",
-    "deleteRule": "id = @request.auth.id",
+    "updateRule": "id = @request.auth.id || @request.auth.role = 'super_admin'",
+    "deleteRule": "id = @request.auth.id || @request.auth.role = 'super_admin'",
     "name": "users",
     "type": "auth",
     "fields": [
@@ -302,6 +302,20 @@
           "admin",
           "super_admin"
         ]
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text_stripe_customer_id_field",
+        "max": 100,
+        "min": 0,
+        "name": "stripe_customer_id",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
       },
       {
         "hidden": false,
@@ -932,11 +946,11 @@
   },
   {
     "id": "pbc_subscriptions",
-    "listRule": "@request.auth.role != 'customer' || customer_id = @request.auth.id",
-    "viewRule": "@request.auth.role != 'customer' || customer_id = @request.auth.id",
-    "createRule": "@request.auth.role != 'customer'",
-    "updateRule": "@request.auth.role != 'customer'",
-    "deleteRule": "@request.auth.role != 'customer'",
+    "listRule": "@request.auth.role = 'super_admin' || customer_id = @request.auth.id",
+    "viewRule": "@request.auth.role = 'super_admin' || customer_id = @request.auth.id",
+    "createRule": "@request.auth.role = 'super_admin'",
+    "updateRule": "@request.auth.role = 'super_admin'",
+    "deleteRule": "@request.auth.role = 'super_admin'",
     "name": "subscriptions",
     "type": "base",
     "fields": [
@@ -994,7 +1008,8 @@
           "pending",
           "active",
           "cancelled",
-          "suspended"
+          "suspended",
+          "overdue"
         ]
       },
       {

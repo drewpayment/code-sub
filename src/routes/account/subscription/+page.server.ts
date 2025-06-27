@@ -1,13 +1,26 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { SubscriptionService } from '$lib/pocketbase';
+import { createOrGetStripeCustomer, createCheckoutSession } from '$lib/server/stripe';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
+    // Debug logging for Stripe return
+    if (url.searchParams.has('success')) {
+        console.log('User returned from Stripe checkout - SUCCESS');
+        console.log('Auth status:', locals.pb.authStore.isValid);
+        console.log('User:', locals.user?.email);
+    }
+    if (url.searchParams.has('cancelled')) {
+        console.log('User returned from Stripe checkout - CANCELLED');
+    }
+
     if (!locals.pb.authStore.isValid) {
+        console.log('Auth store invalid, redirecting to login');
         throw redirect(303, '/login');
     }
 
     if (!locals.user) {
+        console.log('No user in locals, redirecting to login');
         throw redirect(303, '/login');
     }
 
@@ -16,6 +29,10 @@ export const load: PageServerLoad = async ({ locals }) => {
         SubscriptionService.getPlans(true), // Only active plans
         SubscriptionService.getUserSubscription(locals.user.id)
     ]);
+
+    if (url.searchParams.has('success') && currentSubscription) {
+        console.log('Current subscription status after Stripe:', currentSubscription.status);
+    }
 
     return {
         user: locals.user,
@@ -45,7 +62,7 @@ export const actions: Actions = {
                 return fail(400, { error: 'You already have an active subscription. Please cancel it first before subscribing to a new plan.' });
             }
 
-            // Create new subscription
+            // Create new subscription with pending_payment_setup status
             await SubscriptionService.createSubscription({
                 customer_id: locals.user.id,
                 plan_id: planId,
@@ -58,6 +75,77 @@ export const actions: Actions = {
             console.error('Subscription error:', error);
             return fail(500, { error: 'Failed to create subscription. Please try again.' });
         }
+    },
+
+    createCheckoutSession: async ({ locals, url }) => {
+        if (!locals.user) {
+            return fail(401, { error: 'Not authenticated' });
+        }
+
+        // Get user's current subscription
+        const subscription = await SubscriptionService.getUserSubscription(locals.user.id);
+        
+        console.log('=== CREATE CHECKOUT SESSION DEBUG ===');
+        console.log('User ID:', locals.user.id);
+        console.log('Found subscription:', subscription ? {
+            id: subscription.id,
+            status: subscription.status,
+            customer_id: subscription.customer_id,
+            plan_id: subscription.plan_id
+        } : 'null');
+        
+        if (!subscription) {
+            return fail(400, { error: 'No subscription found. Please subscribe to a plan first.' });
+        }
+
+        if (subscription.status !== 'pending') {
+            return fail(400, { error: 'Subscription is not in a state that requires payment setup.' });
+        }
+
+        // Get the plan details to get the Stripe price ID
+        const plan = subscription.expand?.plan_id;
+        
+        if (!plan) {
+            return fail(400, { error: 'Plan not found for this subscription.' });
+        }
+        
+        if (!plan.stripe_price_id) {
+            return fail(400, { error: `Plan "${plan.name}" does not have a Stripe price ID configured. Please contact support to configure Stripe pricing for this plan.` });
+        }
+        
+        console.log('Creating checkout session with subscription ID:', subscription.id);
+        
+        // Create or get Stripe customer
+        const stripeCustomerId = await createOrGetStripeCustomer({
+            id: locals.user.id,
+            email: locals.user.email,
+            name: locals.user.name,
+            stripe_customer_id: locals.user.stripe_customer_id
+        });
+
+        // Update user with Stripe customer ID if it was just created
+        if (!locals.user.stripe_customer_id) {
+            await locals.pb.collection('users').update(locals.user.id, {
+                stripe_customer_id: stripeCustomerId
+            });
+        }
+
+        // Create Stripe checkout session
+        const session = await createCheckoutSession({
+            customer_id: stripeCustomerId,
+            price_id: plan.stripe_price_id,
+            success_url: `${url.origin}/stripe/success`,
+            cancel_url: `${url.origin}/account/subscription?cancelled=true`,
+            subscription_id: subscription.id
+        });
+
+        console.log('Created Stripe session with metadata:', {
+            subscription_id: subscription.id,
+            session_id: session.id
+        });
+
+        // Redirect to Stripe checkout
+        return redirect(303, session.url!);
     },
 
     changePlan: async ({ request, locals }) => {

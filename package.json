@@ -19,7 +19,8 @@
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",
 		"pb:migration": "node scripts/setup-pocketbase.js",
-		"migrate:plans": "node scripts/migrate-pricing-plans.js"
+		"migrate:plans": "node scripts/migrate-pricing-plans.js",
+		"stripe:webhook": "node scripts/stripe-webhook.js"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.0.0",
@@ -47,6 +48,7 @@
 		"drizzle-orm": "^0.44.0",
 		"lucide-svelte": "^0.513.0",
 		"pocketbase": "^0.26.1",
-		"postgres": "^3.4.5"
+		"postgres": "^3.4.5",
+		"stripe": "^18.2.1"
 	}
 }
