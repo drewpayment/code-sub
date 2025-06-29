@@ -1,12 +1,16 @@
 import { pb } from '$lib/pocketbase';
 import type { Handle } from '@sveltejs/kit';
+import { dev } from '$app/environment';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	pb.authStore.loadFromCookie(event.request.headers.get('cookie') || '');
+	
 	if (pb.authStore.isValid) {
 		try {
+			// Refresh the auth token to extend the session
 			await pb.collection('users').authRefresh();
-		} catch (_) {
+		} catch (error) {
+			console.warn('Auth refresh failed:', error);
 			pb.authStore.clear();
 		}
 	}
@@ -16,7 +20,15 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	const response = await resolve(event);
 
-	response.headers.set('set-cookie', pb.authStore.exportToCookie({ secure: false }));
+	// Set cookie with appropriate security settings
+	const cookieOptions = {
+		secure: !dev, // Only secure in production
+		httpOnly: false, // PocketBase needs client access
+		sameSite: 'lax' as const, // Allow cross-site navigation (important for Stripe redirects)
+		maxAge: 7 * 24 * 60 * 60 // 7 days
+	};
+
+	response.headers.set('set-cookie', pb.authStore.exportToCookie(cookieOptions));
 
 	return response;
 };

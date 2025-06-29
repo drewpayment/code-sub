@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import type { ActionData } from './$types';
+	import type { ActionData, PageData } from './$types';
 	import FormError from '$lib/components/FormError.svelte';
 
 	export let form: ActionData;
+	export let data: PageData;
 
 	let loading = false;
 </script>
@@ -14,6 +15,25 @@
             <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Sign In</h1>
             <p class="text-gray-600">Access your CodeSub account.</p>
         </div>
+
+        <!-- Stripe Success Message -->
+        {#if data.stripeSuccess}
+            <div class="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-green-800">Payment Successful!</h3>
+                        <div class="mt-2 text-sm text-green-700">
+                            <p>Your payment was processed successfully. Please sign in to access your activated subscription.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {/if}
 
         <div class="bg-white shadow-lg rounded-lg p-8">
             <form 
@@ -53,7 +73,7 @@
                     />
                 </div>
                 
-                <FormError error={form?.error} />
+                <FormError error={(form as any)?.error} />
 
                 <div class="flex items-center justify-between">
                     <div class="text-sm">

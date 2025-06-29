@@ -160,7 +160,7 @@
 						name="name" 
 						id="name" 
 						required
-						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+						class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 						placeholder="Essential Care"
 					/>
 				</div>
@@ -172,12 +172,12 @@
 							<span class="text-gray-500 sm:text-sm">$</span>
 						</div>
 						<input 
-							type="number" 
-							name="price" 
-							id="price" 
+							type="number"
+							name="price"
+							id="price"
 							step="0.01"
 							required
-							class="block w-full pl-7 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+							class="mt-1 block w-full px-5 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 							placeholder="49.00"
 						/>
 					</div>
@@ -190,7 +190,7 @@
 						id="description" 
 						rows="3"
 						required
-						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+						class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 						placeholder="Brief description of what this plan includes..."
 					></textarea>
 				</div>
@@ -201,7 +201,7 @@
 						name="billing_period" 
 						id="billing_period" 
 						required
-						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+						class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 					>
 						<option value="monthly">Monthly</option>
 						<option value="yearly">Yearly</option>

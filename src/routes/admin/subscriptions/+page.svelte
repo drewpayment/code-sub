@@ -43,7 +43,7 @@
 
 	const getStatusColor = (status: string) => {
 		if (status === 'active') return 'bg-green-100 text-green-800';
-		if (status === 'pending_payment_setup') return 'bg-yellow-100 text-yellow-800';
+		if (status === 'pending') return 'bg-yellow-100 text-yellow-800';
 		if (status === 'payment_failed') return 'bg-red-100 text-red-800';
 		if (status === 'terminated') return 'bg-gray-100 text-gray-800';
 		if (status === 'cancelled') return 'bg-gray-100 text-gray-800';
@@ -73,7 +73,7 @@
 							type="text"
 							name="search"
 							id="search"
-							class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 							placeholder="Search by customer or plan..."
 							value={data.filters.search}
 						/>
@@ -193,8 +193,8 @@
 			</button>
 			<button
 				type="button"
-				on:click={() => handleStatusFilter('pending_payment_setup')}
-				class="py-4 px-1 border-b-2 font-medium text-sm {data.filters.status === 'pending_payment_setup' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
+				on:click={() => handleStatusFilter('pending')}
+				class="py-4 px-1 border-b-2 font-medium text-sm {data.filters.status === 'pending' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
 			>
 				Pending
 			</button>
