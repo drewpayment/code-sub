@@ -4,7 +4,7 @@ export type UserRole = 'customer' | 'employee' | 'manager' | 'admin' | 'super_ad
 
 export type BillingPeriod = 'monthly' | 'yearly' | 'one_time';
 
-export type SubscriptionStatus = 'pending' | 'active' | 'cancelled' | 'suspended' | 'overdue';
+export type SubscriptionStatus = 'pending' | 'active' | 'overdue' | 'cancelled' | 'inactive';
 
 // Enhanced User type with role
 export interface User {

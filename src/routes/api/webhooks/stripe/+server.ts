@@ -25,7 +25,6 @@ async function getAdminPB() {
 	
 	try {
 		await adminPB.admins.authWithPassword(adminEmail, adminPassword);
-		console.log('Successfully authenticated as admin for webhook operation');
 		return adminPB;
 	} catch (error) {
 		console.error('Failed to authenticate as admin:', error);
@@ -71,6 +70,14 @@ export const POST: RequestHandler = async ({ request }) => {
 				await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
 				break;
 
+			case 'charge.refunded':
+				await handleChargeRefunded(event.data.object as Stripe.Charge);
+				break;
+
+			case 'invoice.voided':
+				await handleInvoiceVoided(event.data.object as Stripe.Invoice);
+				break;
+
 			default:
 				console.log(`Unhandled event type: ${event.type}`);
 		}
@@ -90,12 +97,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 	const stripeSubscriptionId = session.subscription;
 	const stripeCustomerId = session.customer;
 
-	console.log('=== CHECKOUT COMPLETED DEBUG ===');
-	console.log('Session metadata:', session.metadata);
-	console.log('Subscription ID from metadata:', subscriptionId);
-	console.log('Stripe subscription ID:', stripeSubscriptionId);
-	console.log('Stripe customer ID:', stripeCustomerId);
-
 	if (!subscriptionId) {
 		console.error('No subscription_id in checkout session metadata');
 		return;
@@ -103,20 +104,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
 	try {
 		const adminPB = await getAdminPB();
-		console.log(`Attempting to update subscription ${subscriptionId}...`);
 		
 		// First, let's check if the subscription exists
 		let existingSubscription;
 		try {
 			existingSubscription = await adminPB.collection('subscriptions').getOne(subscriptionId);
-			console.log('Found existing subscription:', {
-				id: existingSubscription.id,
-				status: existingSubscription.status,
-				customer_id: existingSubscription.customer_id
-			});
 		} catch (error) {
-			console.log('Subscription not found by ID, trying to find by customer and status...');
-			
 			// If subscription not found by ID, try to find a pending subscription for this customer
 			// First, get the user ID from the Stripe customer
 			const users = await adminPB.collection('users').getList(1, 1, {
@@ -125,7 +118,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 			
 			if (users.items.length > 0) {
 				const user = users.items[0];
-				console.log('Found user by Stripe customer ID:', user.id);
 				
 				// Look for pending subscriptions for this user
 				const pendingSubscriptions = await adminPB.collection('subscriptions').getList(1, 10, {
@@ -133,11 +125,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 					sort: '-created'
 				});
 				
-				console.log('Found pending subscriptions:', pendingSubscriptions.items.length);
-				
 				if (pendingSubscriptions.items.length > 0) {
 					existingSubscription = pendingSubscriptions.items[0];
-					console.log('Using most recent pending subscription:', existingSubscription.id);
 				}
 			}
 			
@@ -147,31 +136,20 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 		}
 
 		// Update subscription with Stripe IDs and set status to active
-		const updateResult = await adminPB.collection('subscriptions').update(existingSubscription.id, {
+		await adminPB.collection('subscriptions').update(existingSubscription.id, {
 			stripe_subscription_id: stripeSubscriptionId,
 			status: 'active',
 			start_date: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
 		});
-		
-		console.log('Subscription update result:', updateResult);
 
 		// Update user with Stripe customer ID
-		console.log(`Updating user ${existingSubscription.customer_id} with Stripe customer ID...`);
-		const userUpdateResult = await adminPB.collection('users').update(existingSubscription.customer_id, {
+		await adminPB.collection('users').update(existingSubscription.customer_id, {
 			stripe_customer_id: stripeCustomerId,
 		});
-		
-		console.log('User update result:', userUpdateResult);
 
 		console.log(`Subscription ${existingSubscription.id} activated successfully`);
 	} catch (error) {
 		console.error('Failed to update subscription after checkout:', error);
-		console.error('Error details:', {
-			name: (error as Error).name,
-			message: (error as Error).message,
-			status: (error as any).status,
-			data: (error as any).data
-		});
 	}
 }
 
@@ -325,5 +303,81 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 		console.log(`Subscription ${localSubscription.id} cancelled`);
 	} catch (error) {
 		console.error('Failed to handle subscription deletion:', error);
+	}
+}
+
+/**
+ * Handle charge refund
+ */
+async function handleChargeRefunded(charge: Stripe.Charge) {
+	// Access subscription ID from charge metadata
+	const stripeSubscriptionId = charge.metadata?.subscription_id;
+
+	if (!stripeSubscriptionId) {
+		return; // Not a subscription charge
+	}
+
+	try {
+		const adminPB = await getAdminPB();
+		
+		// Find subscription by Stripe subscription ID
+		const subscriptions = await adminPB.collection('subscriptions').getList(1, 1, {
+			filter: `stripe_subscription_id = "${stripeSubscriptionId}"`,
+		});
+
+		if (subscriptions.items.length === 0) {
+			console.error(`No subscription found for Stripe subscription ${stripeSubscriptionId}`);
+			return;
+		}
+
+		const subscription = subscriptions.items[0];
+
+		// Update subscription status to cancelled
+		await adminPB.collection('subscriptions').update(subscription.id, {
+			status: 'cancelled',
+		});
+
+		console.log(`Subscription ${subscription.id} cancelled due to charge refund`);
+	} catch (error) {
+		console.error('Failed to handle charge refund:', error);
+	}
+}
+
+/**
+ * Handle invoice voided
+ */
+async function handleInvoiceVoided(invoice: Stripe.Invoice) {
+	// Access subscription ID from invoice lines or subscription property
+	const stripeSubscriptionId = typeof invoice.subscription === 'string' 
+		? invoice.subscription 
+		: invoice.lines?.data?.[0]?.subscription;
+
+	if (!stripeSubscriptionId) {
+		return; // Not a subscription payment
+	}
+
+	try {
+		const adminPB = await getAdminPB();
+		
+		// Find subscription by Stripe subscription ID
+		const subscriptions = await adminPB.collection('subscriptions').getList(1, 1, {
+			filter: `stripe_subscription_id = "${stripeSubscriptionId}"`,
+		});
+
+		if (subscriptions.items.length === 0) {
+			console.error(`No subscription found for Stripe subscription ${stripeSubscriptionId}`);
+			return;
+		}
+
+		const subscription = subscriptions.items[0];
+
+		// Update subscription status to cancelled
+		await adminPB.collection('subscriptions').update(subscription.id, {
+			status: 'cancelled',
+		});
+
+		console.log(`Subscription ${subscription.id} cancelled due to invoice voided`);
+	} catch (error) {
+		console.error('Failed to handle invoice voided:', error);
 	}
 } 

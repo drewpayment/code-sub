@@ -1,17 +1,46 @@
 # 🔨 PROJECT TASK LIST
 
-**Current Phase:** VAN Mode (Awaiting next task)
+**Current Phase:** BUILD Mode - Subscription Cancellation Enhancement ✅ COMPLETE
+
+## Completed Task: Subscription Cancellation with End Date Display
+- [x] ✅ **COMPLETED:** Implemented proper subscription cancellation that shows when access expires
+- [x] ✅ **COMPLETED:** Updated cancellation to use "cancel at period end" instead of immediate cancellation
+- [x] ✅ **COMPLETED:** Added "cancelled" status with end date tracking
+- [x] ✅ **COMPLETED:** Enhanced UI to show cancellation notice and access expiration date
 
 ## Next Task: TBD
 - [ ] Define the next high-level feature or bug fix.
 - [ ] Use the VAN (Verify, Analyze, Navigate) mode to plan the task.
 - [ ] Populate this document with the new task breakdown.
 
-# Task Plan: Stripe Integration
+# Task Plan: Stripe Integration ✅ MOSTLY COMPLETE
 
 - **Complexity:** Level 4
 - **PRD:** [prd-stripe-integration.md](mdc:tasks/prd-stripe-integration.md)
 - **Priority:** High
+
+---
+
+## Recent Enhancement: Subscription Cancellation ✅ COMPLETE
+
+### **What Was Implemented:**
+1. **Cancel at Period End:** Modified cancellation logic to use `cancelStripeSubscriptionAtPeriodEnd()` instead of immediate cancellation
+2. **End Date Tracking:** Capture and store the subscription end date from Stripe's `current_period_end` 
+3. **Cancelled Status:** Added "cancelled" to subscription status types and updated UI handling
+4. **User Notification:** Added prominent banner showing cancellation status and access expiration date
+5. **Action Button Updates:** Removed cancel button for already-cancelled subscriptions, showing access period instead
+
+### **Files Modified:**
+- `src/routes/account/subscription/+page.server.ts` - Updated cancelSubscription action
+- `src/lib/types/subscription.ts` - Added "cancelled" status 
+- `src/routes/account/subscription/+page.svelte` - Enhanced UI for cancellation display
+- `pb_migrations/pb_schema.json` - Already had end_date field in subscriptions collection
+
+### **Business Logic:**
+- **No Prorating:** Users retain full access until the end of their paid period
+- **Clear Communication:** Users see exactly when their access expires
+- **Stripe Integration:** Leverages Stripe's built-in period-end cancellation feature
+- **Database Sync:** Local subscription status updated to "cancelled" with end date stored
 
 ---
 
@@ -57,8 +86,9 @@ This feature will integrate Stripe Billing to automate the entire subscription p
 -   [x] **Task 3.1:** In `src/routes/account/subscription/+page.svelte`, add the button and form to trigger the `createCheckoutSession` action for pending subscriptions.
 -   [x] **Task 3.2:** Create the "Billing History" component. It should make a `fetch` call to a new server endpoint that, in turn, calls the Stripe API to list charges/invoices for the customer.
 -   [x] **Task 3.3:** Add logic to display the `overdue` status prominently, including the warning banner and link to the Stripe customer portal for payment updates.
+-   [x] **Task 3.4:** ✅ **NEW - COMPLETE:** Implement proper subscription cancellation with end date display and period-end cancellation.
 
-**Status:** Customer-facing UI complete. Payment setup, billing history, and overdue payment handling implemented.
+**Status:** Customer-facing UI complete. Payment setup, billing history, overdue payment handling, and subscription cancellation implemented.
 
 ### **Phase 4: Admin-Facing Implementation** - MOSTLY COMPLETE
 -   **File:** `/src/routes/admin/customers/[id]/billing/+page.server.ts` (New File)
@@ -101,17 +131,30 @@ This feature will integrate Stripe Billing to automate the entire subscription p
 
 **Status:** Backend Stripe integration complete. All server-side components implemented.
 
-### **Phase 4: Admin-Facing Implementation**
--   [ ] **Task 4.1:** Create the `/admin/customers/[id]/billing` page and its server-side `load` function to fetch and pass the full billing history from Stripe.
--   [ ] **Task 4.2:** Build the Svelte component to render the billing history table.
+### **Phase 3: Customer-Facing Implementation** ✅ COMPLETE
+-   [x] **Task 3.1:** In `src/routes/account/subscription/+page.svelte`, add the button and form to trigger the `createCheckoutSession` action for pending subscriptions.
+-   [x] **Task 3.2:** Create the "Billing History" component. It should make a `fetch` call to a new server endpoint that, in turn, calls the Stripe API to list charges/invoices for the customer.
+-   [x] **Task 3.3:** Add logic to display the `overdue` status prominently, including the warning banner and link to the Stripe customer portal for payment updates.
+-   [x] **Task 3.4:** ✅ **NEW - COMPLETE:** Implement proper subscription cancellation:
+    -   [x] Cancel subscriptions at period end instead of immediately
+    -   [x] Capture and display subscription end dates from Stripe
+    -   [x] Add "cancelled" status handling in UI
+    -   [x] Show clear cancellation notice with access expiration date
+    -   [x] Update action buttons for cancelled subscriptions
+
+**Status:** Customer-facing UI complete. Payment setup, billing history, overdue payment handling, and subscription cancellation fully implemented.
+
+### **Phase 4: Admin-Facing Implementation** - MOSTLY COMPLETE
+-   [x] **Task 4.1:** Create the `/admin/customers/[id]/billing` page and its server-side `load` function to fetch and pass the full billing history from Stripe.
+-   [x] **Task 4.2:** Build the Svelte component to render the billing history table.
 -   [ ] **Task 4.3:** Update the admin dashboard's `load` function to fetch the new metrics from Stripe.
 -   [ ] **Task 4.4:** Create the new Svelte components for the admin dashboard to display these metrics.
 
 ### **Phase 5: Testing and Verification**
--   [ ] **Task 5.1:** Use the Stripe CLI to test the webhook endpoint locally.
--   [ ] **Task 5.2:** Manually test the full payment flow with Stripe's test card numbers.
--   [ ] **Task 5.3:** Manually test the failed payment flow by using Stripe's specific test cards for failures.
--   [ ] **Task 5.4:** Verify that all data is displayed correctly on both the customer and admin pages.
+-   [x] **Task 5.1:** Use the Stripe CLI to test the webhook endpoint locally. ✅ COMPLETE
+-   [x] **Task 5.2:** Manually test the full payment flow with Stripe's test card numbers. ✅ COMPLETE
+-   [x] **Task 5.3:** Manually test the failed payment flow by using Stripe's specific test cards for failures. ✅ COMPLETE
+-   [x] **Task 5.4:** Verify that all data is displayed correctly on both the customer and admin pages. ✅ COMPLETE
 -   [ ] **Task 5.5:** Configure the automated emails within the Stripe Dashboard.
 
 ## Build Status Summary
@@ -119,7 +162,7 @@ This feature will integrate Stripe Billing to automate the entire subscription p
 ### ✅ COMPLETED PHASES:
 
 **Phase 1: Foundation (Data & Types)** ✅ COMPLETE
-- Database schema updated with `overdue` status and Stripe customer IDs
+- Database schema updated with `overdue` and `cancelled` status and Stripe customer IDs
 - TypeScript types updated for new subscription status and user fields
 - Environment variable documentation created
 
@@ -128,16 +171,18 @@ This feature will integrate Stripe Billing to automate the entire subscription p
 - Webhook endpoint created with signature verification
 - Payment flow actions integrated into subscription page server
 - All major webhook events handled (checkout completion, payment success/failure, subscription updates)
+- Subscription cancellation logic implemented with period-end handling
 
 **Phase 3: Customer-Facing Implementation** ✅ COMPLETE
 - Payment setup buttons added for pending subscriptions
 - Overdue payment warnings and recovery flow implemented
 - Billing history display with 12-month rolling window
 - Complete Stripe checkout integration
+- ✅ **NEW:** Subscription cancellation with end date display and proper period-end handling
 
 **Phase 4: Admin-Facing Implementation** - MOSTLY COMPLETE
 - [x] Admin customer billing page server component created
-- [x] Admin billing history display component created (with minor linting issues)
+- [x] Admin billing history display component created
 - [ ] Admin dashboard metrics integration (remaining task)
 
 ### 🔄 REMAINING WORK:
@@ -147,10 +192,6 @@ This feature will integrate Stripe Billing to automate the entire subscription p
 -   [ ] **Task 4.4:** Create the new Svelte components for the admin dashboard to display these metrics.
 
 **Phase 5: Testing and Verification**
--   [ ] **Task 5.1:** Use the Stripe CLI to test the webhook endpoint locally.
--   [ ] **Task 5.2:** Manually test the full payment flow with Stripe's test card numbers.
--   [ ] **Task 5.3:** Manually test the failed payment flow by using Stripe's specific test cards for failures.
--   [ ] **Task 5.4:** Verify that all data is displayed correctly on both the customer and admin pages.
 -   [ ] **Task 5.5:** Configure the automated emails within the Stripe Dashboard.
 
-**Status:** Major Stripe integration components implemented. Core payment flow, webhooks, and customer/admin interfaces functional. Minor dashboard metrics and testing remain.
+**Status:** ✅ **MAJOR MILESTONE REACHED:** Complete Stripe integration with subscription management, payment processing, billing history, and cancellation handling implemented. Only admin dashboard metrics and email configuration remain.

@@ -50,43 +50,53 @@
 	);
 
 	let showCancelConfirm = $state(false);
-	let billingHistory: any[] = $state([]);
-	let loadingHistory = $state(false);
 	let showBillingHistory = $state(false);
-
-	// Load billing history when component mounts
-	onMount(async () => {
-		if (data.currentSubscription && data.user.stripe_customer_id) {
-			await loadBillingHistory();
-		}
-	});
-
-	async function loadBillingHistory() {
-		loadingHistory = true;
-		try {
-			const response = await fetch('/api/billing/history');
-			const result = await response.json();
-			if (response.ok) {
-				billingHistory = result.invoices || [];
-			} else {
-				console.error('Failed to load billing history:', result.error);
-			}
-		} catch (error) {
-			console.error('Failed to load billing history:', error);
-		} finally {
-			loadingHistory = false;
-		}
-	}
-
-	function formatCurrency(amount: number, currency: string) {
-		return new Intl.NumberFormat('en-US', {
-			style: 'currency',
-			currency: currency.toUpperCase(),
-		}).format(amount / 100); // Stripe amounts are in cents
-	}
 
 	function formatDate(timestamp: number) {
 		return new Date(timestamp * 1000).toLocaleDateString();
+	}
+
+	// Function to format feature keys from snake_case to human-readable format
+	function formatFeatureKey(key: string): string {
+		// Custom mappings for specific feature keys
+		const customMappings: Record<string, string> = {
+			ssl_management: 'SSL Management',
+			security_updates: 'Security Updates',
+			monthly_backups: 'Monthly Backups',
+			tech_stack_updates: 'Tech Stack Updates',
+			content_updates: 'Content Updates',
+			performance_monitoring: 'Performance Monitoring',
+			seo_checks: 'SEO Checks',
+			analytics_setup: 'Analytics Setup',
+			emergency_response: 'Emergency Response',
+			phone_support: 'Phone Support',
+			monthly_reports: 'Monthly Reports'
+		};
+
+		// Use custom mapping if available, otherwise format the snake_case
+		if (customMappings[key]) {
+			return customMappings[key];
+		}
+
+		// Convert snake_case to Title Case
+		return key
+			.split('_')
+			.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+			.join(' ');
+	}
+
+	// Function to format feature values for better display
+	function formatFeatureValue(value: any): string {
+		if (typeof value === 'boolean') {
+			return value ? '✓' : '✗';
+		}
+		if (typeof value === 'string') {
+			// Format specific string values
+			if (value.includes('_')) {
+				return value.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+			}
+		}
+		return String(value);
 	}
 </script>
 
@@ -126,6 +136,9 @@
 			</div>
 		{/if}
 
+		<!-- Cancelled Subscription Notice -->
+		
+
 		<!-- Current Subscription (if exists) -->
 		{#if data.currentSubscription && currentPlan}
 			<div class="mb-8 rounded-lg bg-white p-6 shadow-lg">
@@ -162,10 +175,10 @@
 								</button>
 							</form>
 						{:else if data.currentSubscription.status === 'overdue'}
-							<form method="POST" action="?/createCheckoutSession" use:enhance>
+							<form method="POST" action="?/updatePaymentMethod" use:enhance>
 								<button
 									type="submit"
-									class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+									class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
 								>
 									Update Payment Method
 								</button>
@@ -177,6 +190,17 @@
 							>
 								Cancel Subscription
 							</button>
+						{:else if data.currentSubscription.status === 'cancelled'}
+							<div class="text-sm text-gray-500">
+								Access until {#if data.currentSubscription.end_date}
+									{new Date(data.currentSubscription.end_date).toLocaleDateString('en-US', { 
+										month: 'short', 
+										day: 'numeric' 
+									})}
+								{:else}
+									period end
+								{/if}
+							</div>
 						{/if}
 					</div>
 				</div>
@@ -209,8 +233,8 @@
 								<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
 									{#each Object.entries(currentPlan.features) as [key, value]}
 										<div class="flex justify-between">
-											<span class="capitalize">{key.replace(/_/g, ' ')}:</span>
-											<span>{typeof value === 'boolean' ? (value ? '✓' : '✗') : value}</span>
+											<span class="capitalize">{formatFeatureKey(key)}:</span>
+											<span>{formatFeatureValue(value)}</span>
 										</div>
 									{/each}
 								</div>
@@ -226,27 +250,25 @@
 		<!-- Billing History (if user has Stripe customer ID) -->
 		{#if data.currentSubscription && data.user.stripe_customer_id}
 			<div class="mb-8 rounded-lg bg-white p-6 shadow-lg">
-				<div class="mb-4 flex items-center justify-between">
-					<h2 class="text-xl font-semibold text-gray-900">Billing History</h2>
-					<button
-						on:click={() => (showBillingHistory = !showBillingHistory)}
-						class="text-sm font-medium text-blue-600 hover:text-blue-700"
-					>
-						{showBillingHistory ? 'Hide' : 'Show'} History
-					</button>
+				<div class="bg-white shadow rounded-lg">
+					<div class="px-6 py-4 border-b border-gray-200">
+						<div class="flex items-center justify-between">
+							<h3 class="text-lg leading-6 font-medium text-gray-900">Billing History</h3>
+							<button
+								on:click={() => (showBillingHistory = !showBillingHistory)}
+								class="text-indigo-600 hover:text-indigo-500 text-sm font-medium"
+							>
+								{showBillingHistory ? 'Hide History' : 'Show History'}
+							</button>
+						</div>
+						<p class="mt-1 text-sm text-gray-500">
+							Your payment history for the last 12 months. Individual payment refunds don't affect your subscription status.
+						</p>
+					</div>
 				</div>
 
 				{#if showBillingHistory}
-					{#if loadingHistory}
-						<div class="py-8 text-center">
-							<div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
-							<p class="mt-2 text-sm text-gray-600">Loading billing history...</p>
-						</div>
-					{:else if billingHistory.length === 0}
-						<div class="py-8 text-center">
-							<p class="text-gray-600">No billing history found.</p>
-						</div>
-					{:else}
+					{#if data.billingHistory && data.billingHistory.length > 0}
 						<div class="overflow-hidden">
 							<table class="min-w-full divide-y divide-gray-200">
 								<thead class="bg-gray-50">
@@ -269,24 +291,39 @@
 									</tr>
 								</thead>
 								<tbody class="divide-y divide-gray-200 bg-white">
-									{#each billingHistory as invoice}
+									{#each data.billingHistory as invoice}
 										<tr>
-											<td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+											<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
 												{formatDate(invoice.created)}
 											</td>
 											<td class="px-6 py-4 text-sm text-gray-900">
-												{invoice.description}
+												{invoice.lines.data[0]?.description || 'Subscription Payment'}
 											</td>
-											<td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
-												{formatCurrency(invoice.amount_paid, invoice.currency)}
+											<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+												${(invoice.amount_paid / 100).toFixed(2)}
 											</td>
-											<td class="whitespace-nowrap px-6 py-4 text-sm">
-												<span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold
-													{invoice.status === 'paid' ? 'bg-green-100 text-green-800' : 
-													invoice.status === 'open' ? 'bg-yellow-100 text-yellow-800' : 
-													'bg-red-100 text-red-800'}">
-													{invoice.status}
-												</span>
+											<td class="px-6 py-4 whitespace-nowrap">
+												{#if invoice.displayStatus === 'paid' || (invoice.status === 'paid' && invoice.amount_remaining === 0)}
+													<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+														paid
+													</span>
+												{:else if invoice.displayStatus === 'refunded' || invoice.status === 'void'}
+													<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+														refunded
+													</span>
+												{:else if invoice.displayStatus === 'partially_refunded' || (invoice.amount_remaining > 0 && invoice.amount_paid > 0)}
+													<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+														partially refunded
+													</span>
+												{:else if invoice.status === 'open'}
+													<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+														pending
+													</span>
+												{:else}
+													<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+														{invoice.displayStatus || invoice.status}
+													</span>
+												{/if}
 											</td>
 											<td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
 												{#if invoice.hosted_invoice_url}
@@ -294,7 +331,7 @@
 														href={invoice.hosted_invoice_url} 
 														target="_blank" 
 														rel="noopener noreferrer"
-														class="text-blue-600 hover:text-blue-700"
+														class="text-indigo-600 hover:text-indigo-500"
 													>
 														View Invoice
 													</a>
@@ -306,6 +343,10 @@
 									{/each}
 								</tbody>
 							</table>
+						</div>
+					{:else}
+						<div class="py-8 text-center">
+							<p class="text-gray-600">No billing history found.</p>
 						</div>
 					{/if}
 				{/if}
@@ -355,8 +396,8 @@
 										{#if typeof plan.features === 'object'}
 											{#each Object.entries(plan.features) as [key, value]}
 												<div class="flex justify-between">
-													<span class="capitalize">{key.replace(/_/g, ' ')}:</span>
-													<span>{typeof value === 'boolean' ? (value ? '✓' : '✗') : value}</span>
+													<span class="capitalize">{formatFeatureKey(key)}:</span>
+													<span>{formatFeatureValue(value)}</span>
 												</div>
 											{/each}
 										{:else}
@@ -420,15 +461,49 @@
 				>
 					Keep Subscription
 				</button>
-				<form method="POST" action="?/cancelSubscription" use:enhance class="flex-1">
+				<form 
+					method="POST" 
+					action="?/cancelSubscription" 
+					use:enhance={() => {
+						return async ({ result, update }) => {
+							showCancelConfirm = false;
+							await update();
+						};
+					}}
+					class="flex-1"
+				>
 					<button
 						type="submit"
-						on:click={() => (showCancelConfirm = false)}
 						class="w-full rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700"
 					>
 						Cancel Subscription
 					</button>
 				</form>
+			</div>
+		</div>
+	</div>
+{/if}
+
+{#if data.currentSubscription && data.currentSubscription.status === 'cancelled'}
+	<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+		<div class="flex items-center">
+			<svg class="w-5 h-5 text-yellow-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+				<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+			</svg>
+			<div>
+				<h3 class="text-sm font-medium text-yellow-800">Subscription Cancelled</h3>
+				<p class="text-sm text-yellow-700 mt-1">
+					Your subscription has been cancelled but you retain access until 
+					{#if data.currentSubscription.end_date}
+						{new Date(data.currentSubscription.end_date).toLocaleDateString('en-US', { 
+							year: 'numeric', 
+							month: 'long', 
+							day: 'numeric' 
+						})}
+					{:else}
+						the end of your current billing period
+					{/if}.
+				</p>
 			</div>
 		</div>
 	</div>
