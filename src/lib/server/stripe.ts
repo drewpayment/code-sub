@@ -82,7 +82,7 @@ export async function createCheckoutSession(params: {
 }
 
 /**
- * Get billing history for a customer
+ * Get billing history for a customer (including refunded invoices)
  */
 export async function getCustomerBillingHistory(
 	customer_id: string,
@@ -91,14 +91,13 @@ export async function getCustomerBillingHistory(
 	const invoices = await stripe.invoices.list({
 		customer: customer_id,
 		limit,
-		status: 'paid',
 	});
 
 	return invoices.data;
 }
 
 /**
- * Get recent billing history for customer (last 12 months)
+ * Get recent billing history for customer (last 12 months, including refunded)
  */
 export async function getRecentBillingHistory(customer_id: string): Promise<Stripe.Invoice[]> {
 	const twelveMonthsAgo = new Date();
@@ -110,9 +109,100 @@ export async function getRecentBillingHistory(customer_id: string): Promise<Stri
 		created: {
 			gte: Math.floor(twelveMonthsAgo.getTime() / 1000),
 		},
+		expand: ['data.charge'],
 	});
 
 	return invoices.data;
+}
+
+/**
+ * Get recent billing history with real-time refund status
+ */
+export async function getRecentBillingHistoryWithRefunds(customer_id: string): Promise<any[]> {
+	const twelveMonthsAgo = new Date();
+	twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
+	const invoices = await stripe.invoices.list({
+		customer: customer_id,
+		limit: 100,
+		created: {
+			gte: Math.floor(twelveMonthsAgo.getTime() / 1000),
+		},
+	});
+
+	// For each invoice, get the latest status from Stripe
+	const invoicesWithRefundStatus = [];
+	
+	for (const invoice of invoices.data) {
+		try {
+			// Get the latest invoice data from Stripe
+			const latestInvoice = await stripe.invoices.retrieve(invoice.id);
+			
+			// Determine display status based on current state
+			let displayStatus = latestInvoice.status;
+			
+			// Check if invoice was voided (refunded)
+			if (latestInvoice.status === 'void') {
+				displayStatus = 'refunded';
+			}
+			// Check if invoice has partial refunds by looking at amount_remaining
+			else if (latestInvoice.amount_paid > 0 && latestInvoice.amount_remaining > 0) {
+				displayStatus = 'partially_refunded';
+			}
+			
+			invoicesWithRefundStatus.push({
+				...latestInvoice,
+				displayStatus
+			});
+		} catch (error) {
+			console.error(`Failed to get latest invoice data for ${invoice.id}:`, error);
+			// Fallback to original invoice data
+			invoicesWithRefundStatus.push({
+				...invoice,
+				displayStatus: invoice.status
+			});
+		}
+	}
+
+	return invoicesWithRefundStatus;
+}
+
+/**
+ * Get detailed invoice information including refund status
+ */
+export async function getInvoiceWithRefunds(invoice_id: string): Promise<{
+	invoice: Stripe.Invoice;
+	refunds: Stripe.Refund[];
+	totalRefunded: number;
+	isFullyRefunded: boolean;
+}> {
+	const invoice = await stripe.invoices.retrieve(invoice_id, {
+		expand: ['charge'],
+	});
+
+	let refunds: Stripe.Refund[] = [];
+	let totalRefunded = 0;
+
+	// Check if invoice has a charge and get refunds
+	if (invoice.charge) {
+		const chargeId = typeof invoice.charge === 'string' ? invoice.charge : invoice.charge.id;
+		
+		// Get refunds for this charge
+		const refundList = await stripe.refunds.list({
+			charge: chargeId,
+		});
+		refunds = refundList.data;
+		totalRefunded = refunds.reduce((sum, refund) => sum + refund.amount, 0);
+	}
+
+	const isFullyRefunded = totalRefunded >= invoice.amount_paid;
+
+	return {
+		invoice,
+		refunds,
+		totalRefunded,
+		isFullyRefunded,
+	};
 }
 
 /**
@@ -154,4 +244,42 @@ export async function getCustomerPaymentMethods(customer_id: string): Promise<St
 	});
 
 	return paymentMethods.data;
+}
+
+/**
+ * Update a Stripe subscription to a new price
+ */
+export async function updateStripeSubscription(
+	subscription_id: string, 
+	new_price_id: string
+): Promise<Stripe.Subscription> {
+	// Get the current subscription
+	const subscription = await stripe.subscriptions.retrieve(subscription_id);
+	
+	// Update the subscription with the new price
+	const updatedSubscription = await stripe.subscriptions.update(subscription_id, {
+		items: [{
+			id: subscription.items.data[0].id,
+			price: new_price_id,
+		}],
+		proration_behavior: 'create_prorations', // This will prorate the billing
+	});
+
+	return updatedSubscription;
+}
+
+/**
+ * Cancel a Stripe subscription immediately
+ */
+export async function cancelStripeSubscriptionImmediately(subscription_id: string): Promise<Stripe.Subscription> {
+	return await stripe.subscriptions.cancel(subscription_id);
+}
+
+/**
+ * Cancel a Stripe subscription at period end
+ */
+export async function cancelStripeSubscriptionAtPeriodEnd(subscription_id: string): Promise<Stripe.Subscription> {
+	return await stripe.subscriptions.update(subscription_id, {
+		cancel_at_period_end: true,
+	});
 } 
