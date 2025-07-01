@@ -253,21 +253,33 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 
 		const localSubscription = subscriptions.items[0];
 
+		// Prepare update data
+		const updateData: { status?: string; end_date?: string } = {};
+
 		// Update subscription status based on Stripe subscription status
-		let status = localSubscription.status;
 		if (subscription.status === 'active') {
-			status = 'active';
+			updateData.status = 'active';
 		} else if (subscription.status === 'canceled') {
-			status = 'cancelled';
+			updateData.status = 'cancelled';
 		} else if (subscription.status === 'past_due') {
-			status = 'overdue';
+			updateData.status = 'overdue';
 		}
 
-		await adminPB.collection('subscriptions').update(localSubscription.id, {
-			status,
-		});
+		// Handle cancel_at_period_end scenario
+		if (subscription.cancel_at_period_end) {
+			updateData.status = 'cancelled';
+			// Set end date to when the subscription actually expires
+			updateData.end_date = new Date((subscription as any).current_period_end * 1000).toISOString();
+		}
 
-		console.log(`Subscription ${localSubscription.id} updated to status: ${status}`);
+		// If subscription is cancelled and has an ended_at timestamp, use that
+		if (subscription.status === 'canceled' && subscription.ended_at) {
+			updateData.end_date = new Date(subscription.ended_at * 1000).toISOString();
+		}
+
+		await adminPB.collection('subscriptions').update(localSubscription.id, updateData);
+
+		console.log(`Subscription ${localSubscription.id} updated:`, updateData);
 	} catch (error) {
 		console.error('Failed to handle subscription update:', error);
 	}

@@ -2,7 +2,6 @@ import { redirect, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { SubscriptionService } from '$lib/pocketbase';
 import { createOrGetStripeCustomer, createCheckoutSession, getRecentBillingHistoryWithRefunds, cancelStripeSubscriptionImmediately, cancelStripeSubscriptionAtPeriodEnd } from '$lib/server/stripe';
-import type Stripe from 'stripe';
 
 export const load: PageServerLoad = async ({ locals }) => {
     if (!locals.pb.authStore.isValid) {
@@ -29,9 +28,9 @@ export const load: PageServerLoad = async ({ locals }) => {
         date: string;
         description?: string;
     }> = [];
-    if (locals.user.stripe_customer_id) {
+    if (locals.user.stripe_customer_id && currentSubscription?.stripe_subscription_id) {
         try {
-            billingHistory = await getRecentBillingHistoryWithRefunds(locals.user.stripe_customer_id);
+            billingHistory = await getRecentBillingHistoryWithRefunds(locals.user.stripe_customer_id, currentSubscription.stripe_subscription_id);
         } catch (error) {
             console.error('Failed to fetch billing history:', error);
             // Don't fail the page load if billing history fails
@@ -133,8 +132,6 @@ export const actions: Actions = {
             subscription_id: subscription.id
         });
 
-
-
         // Redirect to Stripe checkout
         return redirect(303, session.url!);
     },
@@ -200,7 +197,7 @@ export const actions: Actions = {
         }
     },
 
-            cancelSubscription: async ({ locals }) => {
+    cancelSubscription: async ({ locals }) => {
         if (!locals.user) {
             throw redirect(302, '/login');
         }
@@ -216,9 +213,18 @@ export const actions: Actions = {
             let subscriptionEndDate = null;
             if (currentSubscription.stripe_subscription_id) {
                 try {
-                    const stripeSubscription: Stripe.Subscription = await cancelStripeSubscriptionAtPeriodEnd(currentSubscription.stripe_subscription_id);
-                    // Convert Stripe timestamp to ISO string
-                    subscriptionEndDate = new Date(stripeSubscription.current_period_end * 1000).toISOString();
+                    const stripeSubscription = await cancelStripeSubscriptionAtPeriodEnd(currentSubscription.stripe_subscription_id);
+                    // Convert Stripe timestamp to ISO string - use current_period_end for when access actually expires
+                    const periodEnd = (stripeSubscription as unknown as { current_period_end?: number }).current_period_end;
+                    if (periodEnd) {
+                        subscriptionEndDate = new Date(periodEnd * 1000).toISOString();
+                        console.log('Subscription cancelled at period end:', {
+                            subscription_id: currentSubscription.stripe_subscription_id,
+                            end_date: subscriptionEndDate
+                        });
+                    } else {
+                        console.warn('No current_period_end found in Stripe subscription response');
+                    }
                 } catch (error) {
                     console.error('Error cancelling Stripe subscription:', error);
                     return fail(500, { error: 'Failed to cancel payment subscription' });
@@ -230,7 +236,6 @@ export const actions: Actions = {
                 status: 'cancelled',
                 end_date: subscriptionEndDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // Fallback to 30 days from now
             });
-
 
             return { success: true, message: 'Subscription cancelled successfully. You will retain access until the end of your current billing period.' };
 

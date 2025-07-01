@@ -136,18 +136,18 @@ export async function getRecentBillingHistoryWithRefunds(customer_id: string): P
 	for (const invoice of invoices.data) {
 		try {
 			// Get the latest invoice data from Stripe
-			const latestInvoice = await stripe.invoices.retrieve(invoice.id);
+			const latestInvoice = await stripe.invoices.retrieve(invoice.id!);
 			
 			// Determine display status based on current state
 			let displayStatus = latestInvoice.status;
 			
 			// Check if invoice was voided (refunded)
 			if (latestInvoice.status === 'void') {
-				displayStatus = 'refunded';
+				displayStatus = 'refunded' as Stripe.Invoice.Status;
 			}
 			// Check if invoice has partial refunds by looking at amount_remaining
 			else if (latestInvoice.amount_paid > 0 && latestInvoice.amount_remaining > 0) {
-				displayStatus = 'partially_refunded';
+				displayStatus = 'partially_refunded' as Stripe.Invoice.Status;
 			}
 			
 			invoicesWithRefundStatus.push({
@@ -184,8 +184,9 @@ export async function getInvoiceWithRefunds(invoice_id: string): Promise<{
 	let totalRefunded = 0;
 
 	// Check if invoice has a charge and get refunds
-	if (invoice.charge) {
-		const chargeId = typeof invoice.charge === 'string' ? invoice.charge : invoice.charge.id;
+	const charge = invoice.payments?.data.find(p => p.payment.type === 'charge');
+	if (charge) {
+		const chargeId = charge.id;
 		
 		// Get refunds for this charge
 		const refundList = await stripe.refunds.list({
