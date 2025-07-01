@@ -118,6 +118,88 @@
 	</div>
 </div>
 
+<!-- Stripe Metrics Section -->
+<div class="mb-8">
+	<h3 class="text-lg font-medium text-gray-900 mb-4">Payment & Billing Metrics</h3>
+	<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+		<!-- Overdue Subscriptions -->
+		<div class="bg-white overflow-hidden shadow rounded-lg">
+			<div class="p-5">
+				<div class="flex items-center">
+					<div class="flex-shrink-0">
+						<div class="w-8 h-8 bg-red-500 rounded-md flex items-center justify-center">
+							<span class="text-white text-lg">⚠️</span>
+						</div>
+					</div>
+					<div class="ml-5 w-0 flex-1">
+						<dl>
+							<dt class="text-sm font-medium text-gray-500 truncate">Past Due Subscriptions</dt>
+							<dd class="text-lg font-medium text-gray-900">{data.stats.past_due_subscriptions}</dd>
+						</dl>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Cancelled Subscriptions -->
+		<div class="bg-white overflow-hidden shadow rounded-lg">
+			<div class="p-5">
+				<div class="flex items-center">
+					<div class="flex-shrink-0">
+						<div class="w-8 h-8 bg-gray-500 rounded-md flex items-center justify-center">
+							<span class="text-white text-lg">❌</span>
+						</div>
+					</div>
+					<div class="ml-5 w-0 flex-1">
+						<dl>
+							<dt class="text-sm font-medium text-gray-500 truncate">Cancelled Subscriptions</dt>
+							<dd class="text-lg font-medium text-gray-900">{data.stats.cancelled_subscriptions}</dd>
+						</dl>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Stripe MRR -->
+		<div class="bg-white overflow-hidden shadow rounded-lg">
+			<div class="p-5">
+				<div class="flex items-center">
+					<div class="flex-shrink-0">
+						<div class="w-8 h-8 bg-indigo-500 rounded-md flex items-center justify-center">
+							<span class="text-white text-lg">📊</span>
+						</div>
+					</div>
+					<div class="ml-5 w-0 flex-1">
+						<dl>
+							<dt class="text-sm font-medium text-gray-500 truncate">Stripe MRR</dt>
+							<dd class="text-lg font-medium text-gray-900">{formatCurrency(data.stats.stripe_mrr)}</dd>
+						</dl>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Failed Payments This Month -->
+		<div class="bg-white overflow-hidden shadow rounded-lg">
+			<div class="p-5">
+				<div class="flex items-center">
+					<div class="flex-shrink-0">
+						<div class="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center">
+							<span class="text-white text-lg">💳</span>
+						</div>
+					</div>
+					<div class="ml-5 w-0 flex-1">
+						<dl>
+							<dt class="text-sm font-medium text-gray-500 truncate">Failed Payments (Month)</dt>
+							<dd class="text-lg font-medium text-gray-900">{data.stats.failed_payments_this_month}</dd>
+						</dl>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
 <!-- Quick Actions -->
 <div class="bg-white shadow rounded-lg mb-8">
 	<div class="px-6 py-4 border-b border-gray-200">

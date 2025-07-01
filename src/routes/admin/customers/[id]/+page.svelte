@@ -29,22 +29,61 @@
 	<!-- Customer Header -->
 	<div class="bg-white shadow rounded-lg mb-6">
 		<div class="px-6 py-4 border-b border-gray-200">
-			<div class="flex items-center">
-				<div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
-					<span class="text-lg font-medium text-gray-700">
-						{(data.customer.name || data.customer.email || '').charAt(0).toUpperCase()}
-					</span>
+			<div class="flex items-center justify-between">
+				<div class="flex items-center">
+					<div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
+						<span class="text-lg font-medium text-gray-700">
+							{(data.customer.name || data.customer.email || '').charAt(0).toUpperCase()}
+						</span>
+					</div>
+					<div class="ml-4">
+						<h1 class="text-xl font-semibold text-gray-900">
+							{data.customer.name || 'No name set'}
+						</h1>
+						<p class="text-sm text-gray-500">{data.customer.email}</p>
+					</div>
 				</div>
-				<div class="ml-4">
-					<h1 class="text-xl font-semibold text-gray-900">
-						{data.customer.name || 'No name set'}
-					</h1>
-					<p class="text-sm text-gray-500">{data.customer.email}</p>
+				
+				<!-- Customer Actions -->
+				<div class="flex space-x-3">
+					<a
+						href="/admin/customers/{data.customer.id}/billing"
+						class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+					>
+						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+						</svg>
+						{#if data.customer.stripe_customer_id}
+							View Billing History
+						{:else}
+							View Billing Status
+						{/if}
+					</a>
+					{#if data.customer.stripe_customer_id}
+						<a
+							href="https://dashboard.stripe.com/customers/{data.customer.stripe_customer_id}"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="inline-flex items-center px-3 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+						>
+							<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+							</svg>
+							Stripe Dashboard
+						</a>
+					{:else}
+						<div class="inline-flex items-center px-3 py-2 border border-yellow-300 shadow-sm text-sm font-medium rounded-md text-yellow-700 bg-yellow-50">
+							<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+							</svg>
+							No Stripe Integration
+						</div>
+					{/if}
 				</div>
 			</div>
 		</div>
 		<div class="px-6 py-4">
-			<dl class="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
+			<dl class="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-3">
 				<div>
 					<dt class="text-sm font-medium text-gray-500">Role</dt>
 					<dd class="text-sm text-gray-900">{data.customer.role}</dd>
@@ -57,6 +96,17 @@
 					<dt class="text-sm font-medium text-gray-500">Joined</dt>
 					<dd class="text-sm text-gray-900">{formatDate(data.customer.created)}</dd>
 				</div>
+				{#if data.customer.stripe_customer_id}
+					<div>
+						<dt class="text-sm font-medium text-gray-500">Stripe Customer ID</dt>
+						<dd class="text-sm text-gray-900 font-mono">{data.customer.stripe_customer_id}</dd>
+					</div>
+				{:else}
+					<div>
+						<dt class="text-sm font-medium text-gray-500">Payment Integration</dt>
+						<dd class="text-sm text-yellow-600 font-medium">Not configured</dd>
+					</div>
+				{/if}
 			</dl>
 		</div>
 	</div>
@@ -64,7 +114,17 @@
 	<!-- Current Subscriptions -->
 	<div class="bg-white shadow rounded-lg mb-6">
 		<div class="px-6 py-4 border-b border-gray-200">
-			<h2 class="text-lg font-medium text-gray-900">Current Subscriptions</h2>
+			<div class="flex items-center justify-between">
+				<h2 class="text-lg font-medium text-gray-900">Current Subscriptions</h2>
+				{#if data.customer.stripe_customer_id}
+					<a
+						href="/admin/customers/{data.customer.id}/billing"
+						class="text-sm text-blue-600 hover:text-blue-700 font-medium"
+					>
+						View Full Billing History →
+					</a>
+				{/if}
+			</div>
 		</div>
 		<div class="px-6 py-4">
 			{#if data.subscriptions && data.subscriptions.length > 0}
@@ -79,6 +139,11 @@
 									<p class="text-sm text-gray-500">
 										${subscription.expand?.plan_id?.price || 0}/month
 									</p>
+									{#if subscription.stripe_subscription_id}
+										<p class="text-xs text-gray-400 font-mono mt-1">
+											Stripe: {subscription.stripe_subscription_id}
+										</p>
+									{/if}
 								</div>
 								<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {getStatusColor(subscription.status)}">
 									{subscription.status}
@@ -96,7 +161,19 @@
 							{/if}
 
 							<!-- Quick Actions -->
-							<div class="mt-3 flex space-x-2">
+							<div class="mt-3 flex flex-wrap gap-2">
+								{#if data.customer.stripe_customer_id}
+									<a
+										href="/admin/customers/{data.customer.id}/billing"
+										class="text-xs px-3 py-1 border border-blue-300 rounded-md text-blue-700 hover:bg-blue-50 inline-flex items-center"
+									>
+										<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+										</svg>
+										Billing
+									</a>
+								{/if}
+								
 								<form method="POST" action="?/updateSubscription" class="inline">
 									<input type="hidden" name="subscriptionId" value={subscription.id} />
 									<input type="hidden" name="status" value={subscription.status === 'active' ? 'suspended' : 'active'} />
@@ -127,6 +204,33 @@
 			{/if}
 		</div>
 	</div>
+
+	<!-- Stripe Integration Alert for Active Subscriptions -->
+	{#if !data.customer.stripe_customer_id && data.subscriptions && data.subscriptions.some((sub: any) => sub.status === 'active')}
+		<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+			<div class="flex">
+				<div class="flex-shrink-0">
+					<svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+						<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+					</svg>
+				</div>
+				<div class="ml-3">
+					<h3 class="text-sm font-medium text-yellow-800">Active Subscription Without Payment Integration</h3>
+					<div class="mt-2 text-sm text-yellow-700">
+						<p>This customer has an active subscription but hasn't set up Stripe billing. This means:</p>
+						<ul class="mt-1 list-disc pl-5 space-y-1">
+							<li>No automated billing is occurring</li>
+							<li>No payment history is being tracked</li>
+							<li>Manual subscription management is required</li>
+						</ul>
+						<p class="mt-2">
+							<strong>To resolve:</strong> Have the customer complete payment setup from their account page, or consider migrating this subscription to Stripe billing.
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
 
 	<!-- Assign New Plan -->
 	<div class="bg-white shadow rounded-lg">
