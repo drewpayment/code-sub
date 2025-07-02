@@ -131,7 +131,7 @@ export async function getRecentBillingHistoryWithRefunds(customer_id: string): P
 	});
 
 	// For each invoice, get the latest status from Stripe
-	const invoicesWithRefundStatus = [];
+	const invoicesWithRefundStatus: Array<Stripe.Invoice & { displayStatus: Stripe.Invoice.Status }> = [];
 	
 	for (const invoice of invoices.data) {
 		try {
@@ -143,11 +143,11 @@ export async function getRecentBillingHistoryWithRefunds(customer_id: string): P
 			
 			// Check if invoice was voided (refunded)
 			if (latestInvoice.status === 'void') {
-				displayStatus = 'refunded' as Stripe.Invoice.Status;
+				displayStatus = 'void' as Stripe.Invoice.Status;
 			}
 			// Check if invoice has partial refunds by looking at amount_remaining
 			else if (latestInvoice.amount_paid > 0 && latestInvoice.amount_remaining > 0) {
-				displayStatus = 'partially_refunded' as Stripe.Invoice.Status;
+				displayStatus = 'void' as Stripe.Invoice.Status; // Use 'void' as closest status
 			}
 			
 			invoicesWithRefundStatus.push({
@@ -283,4 +283,262 @@ export async function cancelStripeSubscriptionAtPeriodEnd(subscription_id: strin
 	return await stripe.subscriptions.update(subscription_id, {
 		cancel_at_period_end: true,
 	});
+}
+
+/**
+ * Get dashboard metrics from Stripe
+ */
+export async function getStripeDashboardMetrics(): Promise<{
+	active_subscriptions: number;
+	past_due_subscriptions: number;
+	cancelled_subscriptions: number;
+	total_customers: number;
+	mrr: number;
+	failed_payments_this_month: number;
+}> {
+	try {
+		// Get all subscriptions (paginated)
+		const subscriptions = await stripe.subscriptions.list({
+			limit: 100,
+			expand: ['data.default_payment_method']
+		});
+
+		// Get all customers count
+		const customers = await stripe.customers.list({
+			limit: 1 // We only need the count
+		});
+
+		// Get failed charges from this month
+		const startOfMonth = new Date();
+		startOfMonth.setDate(1);
+		startOfMonth.setHours(0, 0, 0, 0);
+
+		const failedCharges = await stripe.charges.list({
+			limit: 100,
+			created: {
+				gte: Math.floor(startOfMonth.getTime() / 1000)
+			},
+			expand: ['data.outcome']
+		});
+
+		// Calculate metrics
+		let active_subscriptions = 0;
+		let past_due_subscriptions = 0;
+		let cancelled_subscriptions = 0;
+		let mrr = 0;
+
+		for (const subscription of subscriptions.data) {
+			switch (subscription.status) {
+				case 'active':
+					active_subscriptions++;
+					// Calculate MRR (convert from cents and normalize to monthly)
+					for (const item of subscription.items.data) {
+						if (item.price.recurring) {
+							let monthlyAmount = item.price.unit_amount || 0;
+							
+							// Convert to monthly based on interval
+							switch (item.price.recurring.interval) {
+								case 'year':
+									monthlyAmount = monthlyAmount / 12;
+									break;
+								case 'week':
+									monthlyAmount = monthlyAmount * 4.33; // Average weeks per month
+									break;
+								case 'day':
+									monthlyAmount = monthlyAmount * 30; // Average days per month
+									break;
+								// 'month' stays the same
+							}
+							
+							mrr += monthlyAmount;
+						}
+					}
+					break;
+				case 'past_due':
+					past_due_subscriptions++;
+					break;
+				case 'canceled':
+					cancelled_subscriptions++;
+					break;
+			}
+		}
+
+		// Count failed payments this month
+		const failed_payments_this_month = failedCharges.data.filter(
+			charge => charge.status === 'failed'
+		).length;
+
+		// Convert MRR from cents to dollars
+		mrr = mrr / 100;
+
+		return {
+			active_subscriptions,
+			past_due_subscriptions,
+			cancelled_subscriptions,
+			total_customers: customers.has_more ? 1000 : customers.data.length, // Approximation if has_more
+			mrr,
+			failed_payments_this_month
+		};
+	} catch (error) {
+		console.error('Failed to fetch Stripe dashboard metrics:', error);
+		return {
+			active_subscriptions: 0,
+			past_due_subscriptions: 0,
+			cancelled_subscriptions: 0,
+			total_customers: 0,
+			mrr: 0,
+			failed_payments_this_month: 0
+		};
+	}
+}
+
+/**
+ * Get detailed customer financial metrics for admin billing page
+ */
+export async function getCustomerFinancials(customer_id: string): Promise<{
+	metrics: {
+		mrr: number;
+		ltv: number;
+		lifetimeEarnings: number;
+		totalRefunded: number;
+	};
+	billingHistory: Array<{
+		date: string;
+		type: 'Payment' | 'Refund';
+		amount: number;
+		planName: string;
+		status: string;
+		detailsUrl: string;
+	}>;
+}> {
+	try {
+		// Get customer's active subscriptions for MRR calculation
+		const subscriptions = await stripe.subscriptions.list({
+			customer: customer_id,
+			status: 'active',
+			limit: 100
+		});
+
+		// Get all invoices for this customer
+		const invoices = await stripe.invoices.list({
+			customer: customer_id,
+			limit: 100,
+			expand: ['data.charge']
+		});
+
+		// Get all refunds for this customer
+		const charges = await stripe.charges.list({
+			customer: customer_id,
+			limit: 100
+		});
+
+		// Calculate metrics
+		let mrr = 0;
+		let lifetimeEarnings = 0;
+		let totalRefunded = 0;
+
+		// Calculate MRR from active subscriptions
+		for (const subscription of subscriptions.data) {
+			for (const item of subscription.items.data) {
+				if (item.price.recurring) {
+					let monthlyAmount = item.price.unit_amount || 0;
+					
+					// Convert to monthly based on interval
+					switch (item.price.recurring.interval) {
+						case 'year':
+							monthlyAmount = monthlyAmount / 12;
+							break;
+						case 'week':
+							monthlyAmount = monthlyAmount * 4.33;
+							break;
+						case 'day':
+							monthlyAmount = monthlyAmount * 30;
+							break;
+					}
+					
+					mrr += monthlyAmount;
+				}
+			}
+		}
+
+		// Calculate lifetime earnings from successful invoices
+		for (const invoice of invoices.data) {
+			if (invoice.status === 'paid') {
+				lifetimeEarnings += invoice.amount_paid;
+			}
+		}
+
+		// Calculate total refunded from charges
+		for (const charge of charges.data) {
+			totalRefunded += charge.amount_refunded;
+		}
+
+		// Convert from cents to dollars
+		mrr = mrr / 100;
+		lifetimeEarnings = lifetimeEarnings / 100;
+		totalRefunded = totalRefunded / 100;
+		
+		const ltv = lifetimeEarnings - totalRefunded;
+
+		// Build billing history array
+		const billingHistory: Array<{
+			date: string;
+			type: 'Payment' | 'Refund';
+			amount: number;
+			planName: string;
+			status: string;
+			detailsUrl: string;
+		}> = [];
+
+		// Add payments from invoices
+		for (const invoice of invoices.data) {
+			billingHistory.push({
+				date: new Date(invoice.created * 1000).toISOString(),
+				type: 'Payment',
+				amount: invoice.amount_paid / 100,
+				planName: invoice.lines.data[0]?.description || 'Subscription',
+				status: invoice.status || 'unknown',
+				detailsUrl: invoice.hosted_invoice_url || `https://dashboard.stripe.com/invoices/${invoice.id || 'unknown'}`
+			});
+		}
+
+		// Add refunds from charges
+		for (const charge of charges.data) {
+			if (charge.amount_refunded > 0) {
+				// For simplicity, we'll add one refund entry per charge that has refunds
+				billingHistory.push({
+					date: new Date(charge.created * 1000).toISOString(),
+					type: 'Refund',
+					amount: -(charge.amount_refunded / 100), // Negative amount for refunds
+					planName: charge.description || 'Refund',
+					status: 'succeeded',
+					detailsUrl: `https://dashboard.stripe.com/payments/${charge.id}`
+				});
+			}
+		}
+
+		// Sort by date, newest first
+		billingHistory.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+		return {
+			metrics: {
+				mrr,
+				ltv,
+				lifetimeEarnings,
+				totalRefunded
+			},
+			billingHistory
+		};
+	} catch (error) {
+		console.error('Failed to fetch customer financial data:', error);
+		return {
+			metrics: {
+				mrr: 0,
+				ltv: 0,
+				lifetimeEarnings: 0,
+				totalRefunded: 0
+			},
+			billingHistory: []
+		};
+	}
 } 

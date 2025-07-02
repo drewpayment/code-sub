@@ -272,12 +272,23 @@
 								{subscription.start_date ? formatDate(subscription.start_date) : 'Not started'}
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-								<a
-									href="/admin/customers/{subscription.expand?.customer_id?.id}"
-									class="text-blue-600 hover:text-blue-900"
-								>
-									Manage
-								</a>
+								<div class="flex justify-end space-x-2">
+									<a
+										href="/admin/customers/{subscription.expand?.customer_id?.id}"
+										class="text-blue-600 hover:text-blue-900"
+									>
+										Manage
+									</a>
+									{#if subscription.expand?.customer_id?.stripe_customer_id}
+										<span class="text-gray-300">|</span>
+										<a
+											href="/admin/customers/{subscription.expand?.customer_id?.id}/billing"
+											class="text-green-600 hover:text-green-900"
+										>
+											Billing
+										</a>
+									{/if}
+								</div>
 							</td>
 						</tr>
 					{/each}

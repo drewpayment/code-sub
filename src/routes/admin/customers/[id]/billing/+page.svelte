@@ -86,12 +86,99 @@
 			<h2 class="mb-6 text-xl font-semibold text-gray-900">Billing History</h2>
 			
 			{#if !data.customer.stripe_customer_id}
-				<div class="py-8 text-center">
-					<p class="text-gray-600">Customer has no Stripe customer ID. No billing history available.</p>
+				<div class="rounded-md bg-yellow-50 p-4 mb-6">
+					<div class="flex">
+						<div class="flex-shrink-0">
+							<svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+								<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+							</svg>
+						</div>
+						<div class="ml-3">
+							<h3 class="text-sm font-medium text-yellow-800">No Stripe Integration</h3>
+							<div class="mt-2 text-sm text-yellow-700">
+								<p>This customer has an active subscription but no Stripe customer ID. This could be because:</p>
+								<ul class="mt-2 list-disc pl-5 space-y-1">
+									<li>The subscription was assigned manually by an admin</li>
+									<li>This is a legacy subscription from before Stripe integration</li>
+									<li>The customer hasn't completed the payment setup process</li>
+								</ul>
+								{#if data.subscription}
+									<div class="mt-4 p-3 bg-yellow-100 rounded-md">
+										<h4 class="font-medium text-yellow-800">Current Subscription Details:</h4>
+										<dl class="mt-2 text-sm text-yellow-700">
+											<div class="flex justify-between">
+												<dt>Plan:</dt>
+												<dd class="font-medium">{data.subscription.expand?.plan_id?.name || 'Unknown Plan'}</dd>
+											</div>
+											<div class="flex justify-between">
+												<dt>Status:</dt>
+												<dd class="font-medium capitalize">{data.subscription.status}</dd>
+											</div>
+											<div class="flex justify-between">
+												<dt>Started:</dt>
+												<dd class="font-medium">{data.subscription.start_date ? new Date(data.subscription.start_date).toLocaleDateString() : 'Unknown'}</dd>
+											</div>
+											{#if data.subscription.stripe_subscription_id}
+												<div class="flex justify-between">
+													<dt>Stripe Subscription:</dt>
+													<dd class="font-medium font-mono text-xs">{data.subscription.stripe_subscription_id}</dd>
+												</div>
+											{/if}
+										</dl>
+									</div>
+								{/if}
+							</div>
+						</div>
+					</div>
 				</div>
+				
+				<!-- Action Options -->
+				{#if data.subscription && data.subscription.status === 'active'}
+					<div class="rounded-md bg-blue-50 p-4 mb-6">
+						<div class="flex">
+							<div class="flex-shrink-0">
+								<svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+								</svg>
+							</div>
+							<div class="ml-3">
+								<h3 class="text-sm font-medium text-blue-800">Migration Options</h3>
+								<div class="mt-2 text-sm text-blue-700">
+									<p>To enable Stripe billing for this customer:</p>
+									<ol class="mt-2 list-decimal pl-5 space-y-1">
+										<li>Have the customer log into their account</li>
+										<li>Direct them to complete payment setup on their subscription page</li>
+										<li>This will create a Stripe customer and enable billing history tracking</li>
+									</ol>
+								</div>
+								<div class="mt-4">
+									<a
+										href="/account/subscription"
+										target="_blank"
+										rel="noopener noreferrer"
+										class="inline-flex items-center px-3 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200"
+									>
+										<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+										</svg>
+										Customer Subscription Page
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				{/if}
 			{:else if data.billingHistory.length === 0}
 				<div class="py-8 text-center">
-					<p class="text-gray-600">No billing history found for this customer.</p>
+					<div class="mx-auto h-12 w-12 text-gray-400">
+						<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+						</svg>
+					</div>
+					<h3 class="mt-2 text-sm font-medium text-gray-900">No billing history found</h3>
+					<p class="mt-1 text-sm text-gray-500">
+						This customer has a Stripe account but no payment transactions yet.
+					</p>
 				</div>
 			{:else}
 				<div class="overflow-x-auto">
