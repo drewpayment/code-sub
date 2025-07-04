@@ -7,6 +7,9 @@
 	export let data: PageData;
 
 	let loading = false;
+
+	// Type guard for form data
+	$: formData = form as { email?: string; message?: string } | null;
 </script>
 
 <div class="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-gray-50 min-h-screen flex items-center justify-center">
@@ -36,6 +39,13 @@
         {/if}
 
         <div class="bg-white shadow-lg rounded-lg p-8">
+            <!-- Display error message from server action -->
+            {#if formData?.message}
+                <div class="mb-6">
+                    <FormError error={formData.message} />
+                </div>
+            {/if}
+
             <form 
 				method="POST"
 				use:enhance={() => {
@@ -55,6 +65,7 @@
                         type="email" 
                         autocomplete="email" 
                         required 
+                        value={formData?.email || ''}
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         placeholder="you@example.com"
                     />
@@ -72,8 +83,6 @@
                         placeholder="Your password"
                     />
                 </div>
-                
-                <FormError error={(form as any)?.error} />
 
                 <div class="flex items-center justify-between">
                     <div class="text-sm">

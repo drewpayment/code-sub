@@ -20,7 +20,7 @@
 		"db:studio": "drizzle-kit studio",
 		"pb:migration": "node scripts/setup-pocketbase.js",
 		"migrate:plans": "node scripts/migrate-pricing-plans.js",
-		"stripe:webhook": "node scripts/stripe-webhook.js"
+		"stripe:webhook": "stripe listen --forward-to localhost:5173/api/webhooks/stripe"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.0.0",

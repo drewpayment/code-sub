@@ -43,7 +43,7 @@
 		{
 			title: 'Legal',
 			links: [
-				{ href: '/privacy', label: 'Privacy Policy' },
+				{ href: '/privacy-policy', label: 'Privacy Policy' },
 				{ href: '/terms', label: 'Terms of Service' },
 				{ href: '/cookies', label: 'Cookie Policy' },
 				{ href: '/gdpr', label: 'GDPR' }
@@ -143,7 +143,7 @@
 					© {currentYear} Code-Sub. All rights reserved.
 				</div>
 				<div class="flex space-x-6">
-					<a href="/privacy" class="text-gray-400 hover:text-white text-sm transition-colors duration-200">
+					<a href="/privacy-policy" class="text-gray-400 hover:text-white text-sm transition-colors duration-200">
 						Privacy
 					</a>
 					<a href="/terms" class="text-gray-400 hover:text-white text-sm transition-colors duration-200">

@@ -6,6 +6,9 @@
 	export let form: ActionData;
 
 	let loading = false;
+
+	// Type guard for form data
+	$: formData = form as { error?: string } | null;
 </script>
 
 <div class="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-gray-50 min-h-screen flex items-center justify-center">
@@ -80,7 +83,17 @@
                     />
                 </div>
                 
-                <FormError error={form?.error} />
+                <FormError error={formData?.error} />
+
+                <!-- Privacy Policy Disclaimer -->
+                <div class="text-sm text-gray-600">
+                    <p>
+                        By signing up for an account, you agree to our 
+                        <a href="/privacy-policy" target="_blank" class="font-medium text-blue-600 hover:text-blue-500">
+                            Privacy Policy
+                        </a>.
+                    </p>
+                </div>
 
                 <div>
                     <button 
