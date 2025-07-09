@@ -19,11 +19,11 @@ jobs:
         env:
           POCKETBASE_ADMIN_EMAIL: admin@example.com
           POCKETBASE_ADMIN_PASSWORD: admin123456
-        options: >-
-          --health-cmd "curl -f http://localhost:8090/api/health || exit 1"
-          --health-interval 30s
-          --health-timeout 10s
-          --health-retries 5
+       # options: >-
+       #   --health-cmd "curl -f http://localhost:8090/api/health || exit 1"
+       #   --health-interval 30s
+       #   --health-timeout 10s
+       #   --health-retries 5
 
     steps:
     - uses: actions/checkout@v4
@@ -114,4 +114,4 @@ jobs:
           echo "Linting failed - blocking merge"
           exit 1
         fi
-        echo "All checks passed - merge allowed" 
+        echo "All checks passed - merge allowed"
