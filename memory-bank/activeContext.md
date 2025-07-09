@@ -1,7 +1,5 @@
 # Active Context
 
-**Current Focus:** Awaiting next task assignment.
+**Current Focus:** Awaiting next task.
 
-**Status:** The previous task (Stripe Integration System) has been successfully implemented, reflected upon, and archived. The Memory Bank is now prepared for a new feature or bug fix.
-
-**Next Action:** Use the VAN (Verify, Analyze, Navigate) mode to initialize the next task. 
+The previous task, "Playwright Testing Automation," has been completed and archived. The system is now ready for a new task to be initiated via VAN mode. 
