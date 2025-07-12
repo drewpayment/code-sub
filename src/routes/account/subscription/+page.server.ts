@@ -2,6 +2,26 @@ import { redirect, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { SubscriptionService } from '$lib/pocketbase';
 import { createOrGetStripeCustomer, createCheckoutSession, getRecentBillingHistoryWithRefunds, cancelStripeSubscriptionImmediately, cancelStripeSubscriptionAtPeriodEnd } from '$lib/server/stripe';
+import { PB_URL, PB_EMAIL, PB_PASSWORD } from '$env/static/private';
+import PocketBase from 'pocketbase';
+
+// Create an admin-authenticated PocketBase instance
+async function getAdminPB() {
+    const adminPB = new PocketBase(PB_URL);
+    
+    if (!PB_EMAIL || !PB_PASSWORD) {
+        throw new Error('PB_EMAIL and PB_PASSWORD are required for admin operations');
+    }
+    
+    try {
+        // @ts-expect-error - Type definition issue with PocketBase admin auth
+        await adminPB.admins.authWithPassword(PB_EMAIL, PB_PASSWORD);
+        return adminPB;
+    } catch (error) {
+        console.error('Failed to authenticate as admin:', error);
+        throw new Error('Failed to authenticate as admin for subscription operation');
+    }
+}
 
 export const load: PageServerLoad = async ({ locals }) => {
     if (!locals.pb.authStore.isValid) {
@@ -66,12 +86,15 @@ export const actions: Actions = {
                 return fail(400, { error: 'You already have an active subscription. Please cancel it first before subscribing to a new plan.' });
             }
 
-            // Create new subscription with pending_payment_setup status
-            await SubscriptionService.createSubscription({
+            // Create admin PocketBase instance to create subscription
+            const adminPB = await getAdminPB();
+
+            // Create new subscription with pending status using admin instance
+            await adminPB.collection('subscriptions').create({
                 customer_id: locals.user.id,
                 plan_id: planId,
                 status: 'pending',
-                start_date: new Date().toISOString()
+                start_date: new Date().toISOString().split('T')[0] // Convert to YYYY-MM-DD format for date field
             });
 
             return { success: true, message: 'Successfully subscribed to plan! Please complete your payment setup.' };
@@ -179,11 +202,12 @@ export const actions: Actions = {
                 }
             }
 
-            // Step 2: Update the local subscription to the new plan with pending status
-            await SubscriptionService.updateSubscription(currentSubscription.id, {
+            // Step 2: Update the local subscription to the new plan with pending status using admin instance
+            const adminPB = await getAdminPB();
+            await adminPB.collection('subscriptions').update(currentSubscription.id, {
                 plan_id: planId,
                 status: 'pending',
-                stripe_subscription_id: undefined, // Clear the old Stripe subscription ID
+                stripe_subscription_id: '', // Clear the old Stripe subscription ID
                 notes: `Plan changed from ${currentSubscription.expand?.plan_id?.name} to ${newPlan.name} on ${new Date().toLocaleDateString()}. Requires payment setup.`
             });
 
@@ -231,10 +255,11 @@ export const actions: Actions = {
                 }
             }
 
-            // Update subscription status to cancelled and set end date
-            await SubscriptionService.updateSubscription(currentSubscription.id, {
+            // Update subscription status to cancelled and set end date using admin instance
+            const adminPB = await getAdminPB();
+            await adminPB.collection('subscriptions').update(currentSubscription.id, {
                 status: 'cancelled',
-                end_date: subscriptionEndDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // Fallback to 30 days from now
+                end_date: subscriptionEndDate ? subscriptionEndDate.split('T')[0] : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // Convert to YYYY-MM-DD format
             });
 
             return { success: true, message: 'Subscription cancelled successfully. You will retain access until the end of your current billing period.' };

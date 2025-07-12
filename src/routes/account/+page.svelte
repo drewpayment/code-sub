@@ -5,7 +5,7 @@
     export let data: PageData;
 
     // Helper function to get status color and text
-    function getStatusDisplay(status: SubscriptionStatus) {
+    function getStatusDisplay(status: SubscriptionStatus | string) {
         switch (status) {
             case 'active':
                 return {
@@ -55,6 +55,32 @@
             <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">My Account</h1>
             <p class="text-gray-600">View and manage your account details.</p>
         </div>
+
+        <!-- Cancelled Subscription Notice -->
+        {#if data.subscription && data.subscription.status === 'cancelled'}
+            <div class="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+                <div class="flex items-center">
+                    <svg class="mr-3 h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div>
+                        <h3 class="text-sm font-medium text-yellow-800">Subscription Cancelled</h3>
+                        <p class="mt-1 text-sm text-yellow-700">
+                            Your subscription has been cancelled but you retain access until 
+                            {#if data.subscription.end_date}
+                                {new Date(data.subscription.end_date).toLocaleDateString('en-US', { 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric' 
+                                })}
+                            {:else}
+                                the end of your current billing period
+                            {/if}.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {/if}
 
         <div class="bg-white shadow-lg rounded-lg p-8">
             <div class="space-y-6">
