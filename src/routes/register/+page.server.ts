@@ -18,14 +18,31 @@ export const actions: Actions = {
         }
 
         try {
-            await locals.pb.collection('users').create({ name, email, password, passwordConfirm });
+            await locals.pb.collection('users').create({ 
+                name, 
+                email, 
+                password, 
+                passwordConfirm,
+                role: 'customer' // Required field - default new users to customer role
+            });
             await locals.pb.collection('users').requestVerification(email);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Register Action Error:', err);
-            // This is a bit of a guess, but Pocketbase often throws a 400 for duplicate emails.
-            if (err.status === 400) {
-                 throw error(400, 'An account with this email address already exists.');
+            
+            // Handle PocketBase ClientResponseError
+            if (err && typeof err === 'object' && 'status' in err) {
+                const pbError = err as { status: number; message?: string; data?: Record<string, unknown> };
+                
+                if (pbError.status === 400) {
+                    // Check if it's a duplicate email error
+                    if (pbError.data?.email) {
+                        throw error(400, 'An account with this email address already exists.');
+                    }
+                    // Handle other validation errors
+                    throw error(400, 'Please check your input and try again.');
+                }
             }
+            
             throw error(500, 'Something went wrong creating your account.');
         }
 
