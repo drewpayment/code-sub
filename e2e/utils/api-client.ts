@@ -4,8 +4,10 @@ import type { TestUser, TestSubscription, TestPlan } from '../types/test-types.j
 export class TestApiClient {
 	private pb: PocketBase;
 
-	constructor(baseUrl = 'http://localhost:8090') {
-		this.pb = new PocketBase(baseUrl);
+	constructor(baseUrl?: string) {
+		// Use environment variable for CI, fallback to localhost for local development
+		const pocketBaseUrl = baseUrl || process.env.PB_URL || 'http://localhost:8090';
+		this.pb = new PocketBase(pocketBaseUrl);
 	}
 
 	/**
@@ -13,12 +15,16 @@ export class TestApiClient {
 	 */
 	async createUser(userData: Omit<TestUser, 'id'>): Promise<TestUser> {
 		try {
+			// Authenticate as admin before creating users (required by PocketBase permissions)
+			await this.authenticateAsAdmin();
+			
 			const user = await this.pb.collection('users').create({
 				email: userData.email,
 				password: userData.password,
 				passwordConfirm: userData.password,
-				username: userData.username || userData.email.split('@')[0],
+				name: userData.username || userData.email.split('@')[0], // Use name field as required by registration
 				verified: userData.verified || false,
+				role: 'customer' // Required field - default test users to customer role
 			});
 
 			return {
@@ -53,12 +59,14 @@ export class TestApiClient {
 	 */
 	async authenticateAsAdmin(): Promise<void> {
 		try {
-			await this.pb.admins.authWithPassword(
-				process.env.POCKETBASE_ADMIN_EMAIL || 'admin@example.com',
-				process.env.POCKETBASE_ADMIN_PASSWORD || 'admin123456'
-			);
+			// Use the same environment variable names as in CI and the main app
+			const adminEmail = process.env.PB_EMAIL || process.env.POCKETBASE_ADMIN_EMAIL || 'admin@example.com';
+			const adminPassword = process.env.PB_PASSWORD || process.env.POCKETBASE_ADMIN_PASSWORD || 'admin123456';
+			
+			await this.pb.admins.authWithPassword(adminEmail, adminPassword);
 		} catch (error) {
 			console.error('Failed to authenticate as admin:', error);
+			console.error('Admin email:', process.env.PB_EMAIL || process.env.POCKETBASE_ADMIN_EMAIL || 'admin@example.com');
 			throw new Error(`Failed to authenticate as admin: ${error}`);
 		}
 	}
@@ -94,10 +102,10 @@ export class TestApiClient {
 				name: planData.name,
 				description: planData.description,
 				price: planData.price,
-				interval: planData.interval,
-				stripePriceId: planData.stripePriceId || `price_test_${Date.now()}`,
+				billing_period: planData.interval, // Use correct field name from schema
+				stripe_price_id: planData.stripePriceId || `price_test_${Date.now()}`, // Use correct field name
 				features: planData.features,
-				active: planData.active,
+				is_active: planData.active, // Use correct field name from schema
 			});
 
 			return {
@@ -105,10 +113,10 @@ export class TestApiClient {
 				name: plan.name,
 				description: plan.description,
 				price: plan.price,
-				interval: plan.interval,
-				stripePriceId: plan.stripePriceId,
+				interval: plan.billing_period, // Map back to expected interface
+				stripePriceId: plan.stripe_price_id, // Map back to expected interface
 				features: plan.features,
-				active: plan.active,
+				active: plan.is_active, // Map back to expected interface
 				created: plan.created,
 				updated: plan.updated,
 			};
@@ -138,22 +146,22 @@ export class TestApiClient {
 		try {
 			await this.authenticateAsAdmin();
 			const subscription = await this.pb.collection('subscriptions').create({
-				userId: subscriptionData.userId,
-				planId: subscriptionData.planId,
+				customer_id: subscriptionData.userId, // Use correct field name from schema
+				plan_id: subscriptionData.planId, // Use correct field name from schema
 				status: subscriptionData.status,
-				stripeSubscriptionId: subscriptionData.stripeSubscriptionId || `sub_test_${Date.now()}`,
-				currentPeriodStart: subscriptionData.currentPeriodStart || new Date().toISOString(),
-				currentPeriodEnd: subscriptionData.currentPeriodEnd || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+				stripe_subscription_id: subscriptionData.stripeSubscriptionId || `sub_test_${Date.now()}`, // Use correct field name
+				start_date: subscriptionData.currentPeriodStart ? subscriptionData.currentPeriodStart.split('T')[0] : new Date().toISOString().split('T')[0], // Date format YYYY-MM-DD
+				end_date: subscriptionData.currentPeriodEnd ? subscriptionData.currentPeriodEnd.split('T')[0] : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Date format YYYY-MM-DD
 			});
 
 			return {
 				id: subscription.id,
-				userId: subscription.userId,
-				planId: subscription.planId,
+				userId: subscription.customer_id, // Map back to expected interface
+				planId: subscription.plan_id, // Map back to expected interface
 				status: subscription.status,
-				stripeSubscriptionId: subscription.stripeSubscriptionId,
-				currentPeriodStart: subscription.currentPeriodStart,
-				currentPeriodEnd: subscription.currentPeriodEnd,
+				stripeSubscriptionId: subscription.stripe_subscription_id, // Map back to expected interface
+				currentPeriodStart: subscription.start_date, // Map back to expected interface
+				currentPeriodEnd: subscription.end_date, // Map back to expected interface
 				created: subscription.created,
 				updated: subscription.updated,
 			};
@@ -185,7 +193,7 @@ export class TestApiClient {
 			
 			// Delete subscriptions first (due to foreign key constraints)
 			const subscriptions = await this.pb.collection('subscriptions').getFullList({
-				filter: `userId = "${userId}"`
+				filter: `customer_id = "${userId}"` // Use correct field name from schema
 			});
 			
 			for (const subscription of subscriptions) {
