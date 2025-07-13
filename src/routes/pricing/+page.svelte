@@ -1,11 +1,15 @@
 <script lang="ts">
   import { Container, Grid } from '$lib';
   import PricingCard from '$lib/components/PricingCard.svelte';
+  import OneTimeProjectCard from '$lib/components/OneTimeProjectCard.svelte';
   import Faq from '$lib/components/Faq.svelte';
+
+  export let data: any;
 
   type TierKey = 'essential' | 'professional' | 'premium';
 
-  const pricingTiers = [
+  // Fallback pricing tiers (if no data from server)
+  const fallbackPricingTiers = [
     {
       name: 'Essential Care',
       description: 'Reliable hosting and core maintenance for a secure online presence.',
@@ -51,6 +55,10 @@
     }
   ];
 
+  // Use server data if available, otherwise fallback to static data
+  $: subscriptionPlans = data.subscriptionPlans?.length > 0 ? data.subscriptionPlans : fallbackPricingTiers;
+  $: oneTimeProjects = data.oneTimeProjects || [];
+
   const faqItems = [
     {
       question: 'What is included in the price?',
@@ -84,7 +92,7 @@
       tiers: { essential: false, professional: true, premium: true }
     },
     { name: 'Basic SEO Checks', tiers: { essential: false, professional: true, premium: true } },
-    { name: 'Advanced SEO', tiers: { essential: false, professional: false, premium: true } },
+    { name: 'Advanced SEO', tiers: { essential: false, professional: true, premium: true } },
     {
       name: 'Monthly Performance Reports',
       tiers: { essential: false, professional: false, premium: true }
@@ -107,11 +115,31 @@
 
     <div class="mt-16">
       <Grid cols={{ sm: 1, lg: 3 }} gap="lg" class="items-stretch">
-        {#each pricingTiers as tier}
+        {#each subscriptionPlans as tier}
           <PricingCard {tier} />
         {/each}
       </Grid>
     </div>
+
+    <!-- One-Time Projects Section -->
+    {#if oneTimeProjects.length > 0}
+      <div class="mt-24">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900">
+            One-Time Projects
+          </h2>
+          <p class="mt-4 text-lg text-gray-600">
+            Custom solutions for specific business needs. Get a personalized quote.
+          </p>
+        </div>
+        
+        <Grid cols={{ sm: 1, md: 2, lg: 3 }} gap="lg" class="items-stretch">
+          {#each oneTimeProjects as project}
+            <OneTimeProjectCard plan={project} />
+          {/each}
+        </Grid>
+      </div>
+    {/if}
 
     <div class="mt-24">
       <h2 class="text-3xl font-bold text-center text-gray-900">Feature Comparison</h2>

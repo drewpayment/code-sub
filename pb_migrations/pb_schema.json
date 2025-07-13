@@ -858,6 +858,21 @@
         "type": "text"
       },
       {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "select_plan_type_field",
+        "maxSelect": 1,
+        "name": "type",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "select",
+        "values": [
+          "subscription",
+          "one_time_project"
+        ]
+      },
+      {
         "hidden": false,
         "id": "number_price_field",
         "max": 999999.99,
@@ -865,7 +880,31 @@
         "name": "price",
         "noDecimal": false,
         "presentable": false,
-        "required": true,
+        "required": false,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "hidden": false,
+        "id": "number_price_min_field",
+        "max": 999999.99,
+        "min": 0,
+        "name": "price_min",
+        "noDecimal": false,
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "hidden": false,
+        "id": "number_price_max_field",
+        "max": 999999.99,
+        "min": 0,
+        "name": "price_max",
+        "noDecimal": false,
+        "presentable": false,
+        "required": false,
         "system": false,
         "type": "number"
       },
@@ -876,7 +915,7 @@
         "maxSelect": 1,
         "name": "billing_period",
         "presentable": false,
-        "required": true,
+        "required": false,
         "system": false,
         "type": "select",
         "values": [
@@ -1213,6 +1252,150 @@
       }
     ],
     "indexes": [],
+    "system": false
+  },
+  {
+    "id": "pbc_one_time_invoices",
+    "listRule": "@request.auth.role = 'super_admin' || customer_id = @request.auth.id",
+    "viewRule": "@request.auth.role = 'super_admin' || customer_id = @request.auth.id",
+    "createRule": "@request.auth.role = 'super_admin'",
+    "updateRule": "@request.auth.role = 'super_admin'",
+    "deleteRule": "@request.auth.role = 'super_admin'",
+    "name": "one_time_invoices",
+    "type": "base",
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "hidden": false,
+        "id": "text_invoice_id",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "cascadeDelete": false,
+        "collectionId": "_pb_users_auth_",
+        "hidden": false,
+        "id": "relation_invoice_customer",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "customer_id",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "cascadeDelete": false,
+        "collectionId": "pbc_plans",
+        "hidden": false,
+        "id": "relation_invoice_plan",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "plan_id",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text_stripe_invoice_id",
+        "max": 100,
+        "min": 1,
+        "name": "stripe_invoice_id",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "select_invoice_status",
+        "maxSelect": 1,
+        "name": "status",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "select",
+        "values": [
+          "draft",
+          "open",
+          "paid",
+          "uncollectible",
+          "void"
+        ]
+      },
+      {
+        "hidden": false,
+        "id": "number_invoice_amount",
+        "max": 999999.99,
+        "min": 0,
+        "name": "amount",
+        "noDecimal": false,
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "hidden": false,
+        "id": "date_invoice_due_date",
+        "name": "due_date",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "date"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text_invoice_pdf_url",
+        "max": 500,
+        "min": 0,
+        "name": "invoice_pdf",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "autodate_invoice_created",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": true,
+        "type": "autodate"
+      },
+      {
+        "hidden": false,
+        "id": "autodate_invoice_updated",
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": true,
+        "type": "autodate"
+      }
+    ],
+    "indexes": [
+      "CREATE INDEX `idx_one_time_invoices_customer` ON `one_time_invoices` (`customer_id`)",
+      "CREATE UNIQUE INDEX `idx_one_time_invoices_stripe_id` ON `one_time_invoices` (`stripe_invoice_id`)"
+    ],
     "system": false
   }
 ]

@@ -3,6 +3,7 @@
 	export let form: any;
 	
 	let showCreateForm = false;
+	let selectedPlanType: 'subscription' | 'one_time_project' = 'subscription';
 	
 	const scrollToForm = () => {
 		showCreateForm = true;
@@ -14,6 +15,30 @@
 			}
 		}, 100);
 	};
+
+	// Helper function to format price display
+	function formatPrice(plan: any) {
+		if (plan.type === 'one_time_project') {
+			return `$${plan.price_min} - $${plan.price_max}`;
+		}
+		return `$${plan.price}`;
+	}
+
+	// Helper function to format billing period display
+	function formatBilling(plan: any) {
+		if (plan.type === 'one_time_project') {
+			return 'One-time';
+		}
+		return plan.billing_period ? plan.billing_period.charAt(0).toUpperCase() + plan.billing_period.slice(1) : '';
+	}
+
+	// Helper function to format plan type display
+	function formatPlanType(plan: any) {
+		if (plan.type === 'one_time_project') {
+			return 'One-Time Project';
+		}
+		return 'Subscription';
+	}
 </script>
 
 <svelte:head>
@@ -57,24 +82,27 @@
 
 	<!-- Plans List -->
 	<div class="bg-white shadow rounded-lg">
-		<div class="overflow-hidden">
+		<div class="overflow-x-auto">
 			{#if data.plans && data.plans.length > 0}
 				<table class="min-w-full divide-y divide-gray-200">
 					<thead class="bg-gray-50">
 						<tr>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+							<th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
 								Plan
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+							<th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+								Type
+							</th>
+							<th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
 								Price
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+							<th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px] hidden sm:table-cell">
 								Billing
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+							<th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">
 								Status
 							</th>
-							<th class="relative px-6 py-3">
+							<th class="relative px-3 md:px-6 py-3 min-w-[100px]">
 								<span class="sr-only">Actions</span>
 							</th>
 						</tr>
@@ -82,38 +110,47 @@
 					<tbody class="bg-white divide-y divide-gray-200">
 						{#each data.plans as plan}
 							<tr class="hover:bg-gray-50">
-								<td class="px-6 py-4 whitespace-nowrap">
+								<td class="px-3 md:px-6 py-4">
 									<div>
-										<div class="text-sm font-medium text-gray-900">{plan.name}</div>
-										<div class="text-sm text-gray-500">{plan.description}</div>
+										<div class="text-sm font-medium text-gray-900 break-words">{plan.name}</div>
+										<div class="text-xs md:text-sm text-gray-500 break-words line-clamp-2">{plan.description}</div>
 									</div>
 								</td>
-								<td class="px-6 py-4 whitespace-nowrap">
-									<div class="text-sm font-medium text-gray-900">${plan.price}</div>
+								<td class="px-3 md:px-6 py-4 whitespace-nowrap">
+									<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {plan.type === 'subscription' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">
+										<span class="hidden sm:inline">{formatPlanType(plan)}</span>
+										<span class="sm:hidden">{plan.type === 'subscription' ? 'Sub' : 'Project'}</span>
+									</span>
 								</td>
-								<td class="px-6 py-4 whitespace-nowrap">
-									<div class="text-sm text-gray-900 capitalize">{plan.billing_period}</div>
+								<td class="px-3 md:px-6 py-4 whitespace-nowrap">
+									<div class="text-xs md:text-sm font-medium text-gray-900">{formatPrice(plan)}</div>
 								</td>
-								<td class="px-6 py-4 whitespace-nowrap">
+								<td class="px-3 md:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+									<div class="text-xs md:text-sm text-gray-900">{formatBilling(plan)}</div>
+								</td>
+								<td class="px-3 md:px-6 py-4 whitespace-nowrap">
 									{#if plan.is_active}
-										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-											Active
+										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+											<span class="hidden sm:inline">Active</span>
+											<span class="sm:hidden">✓</span>
 										</span>
 									{:else}
-										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-											Inactive
+										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+											<span class="hidden sm:inline">Inactive</span>
+											<span class="sm:hidden">✗</span>
 										</span>
 									{/if}
 								</td>
-								<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+								<td class="px-3 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
 									<form method="POST" action="?/togglePlanStatus" class="inline">
 										<input type="hidden" name="id" value={plan.id} />
 										<input type="hidden" name="is_active" value={plan.is_active} />
 										<button 
 											type="submit"
-											class="text-blue-600 hover:text-blue-900"
+											class="text-blue-600 hover:text-blue-900 text-xs md:text-sm px-2 py-1 rounded hover:bg-blue-50"
 										>
-											{plan.is_active ? 'Deactivate' : 'Activate'}
+											<span class="hidden md:inline">{plan.is_active ? 'Deactivate' : 'Activate'}</span>
+											<span class="md:hidden">{plan.is_active ? 'Off' : 'On'}</span>
 										</button>
 									</form>
 								</td>
@@ -153,6 +190,21 @@
 		</div>
 		<div class="px-6 py-4">
 			<form method="POST" action="?/createPlan" class="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8">
+				<!-- Plan Type Selector -->
+				<div class="sm:col-span-2">
+					<label for="type" class="block text-sm font-medium text-gray-700">Plan Type</label>
+					<select 
+						name="type" 
+						id="type" 
+						bind:value={selectedPlanType}
+						required
+						class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+					>
+						<option value="subscription">Subscription Plan</option>
+						<option value="one_time_project">One-Time Project</option>
+					</select>
+				</div>
+
 				<div>
 					<label for="name" class="block text-sm font-medium text-gray-700">Plan Name</label>
 					<input 
@@ -161,27 +213,79 @@
 						id="name" 
 						required
 						class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-						placeholder="Essential Care"
+						placeholder={selectedPlanType === 'subscription' ? 'Essential Care' : 'Essential Online Presence'}
 					/>
 				</div>
 				
-				<div>
-					<label for="price" class="block text-sm font-medium text-gray-700">Price</label>
-					<div class="mt-1 relative rounded-md shadow-sm">
-						<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-							<span class="text-gray-500 sm:text-sm">$</span>
+				<!-- Conditional Fields Based on Plan Type -->
+				{#if selectedPlanType === 'subscription'}
+					<div>
+						<label for="price" class="block text-sm font-medium text-gray-700">Price</label>
+						<div class="mt-1 relative rounded-md shadow-sm">
+							<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+								<span class="text-gray-500 sm:text-sm">$</span>
+							</div>
+							<input 
+								type="number"
+								name="price"
+								id="price"
+								step="0.01"
+								required
+								class="mt-1 block w-full px-5 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+								placeholder="49.00"
+							/>
 						</div>
-						<input 
-							type="number"
-							name="price"
-							id="price"
-							step="0.01"
-							required
-							class="mt-1 block w-full px-5 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-							placeholder="49.00"
-						/>
 					</div>
-				</div>
+					
+					<div class="sm:col-span-2">
+						<label for="billing_period" class="block text-sm font-medium text-gray-700">Billing Period</label>
+						<select 
+							name="billing_period" 
+							id="billing_period" 
+							required
+							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+						>
+							<option value="monthly">Monthly</option>
+							<option value="yearly">Yearly</option>
+						</select>
+					</div>
+				{:else}
+					<div>
+						<label for="price_min" class="block text-sm font-medium text-gray-700">Minimum Price</label>
+						<div class="mt-1 relative rounded-md shadow-sm">
+							<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+								<span class="text-gray-500 sm:text-sm">$</span>
+							</div>
+							<input 
+								type="number"
+								name="price_min"
+								id="price_min"
+								step="0.01"
+								required
+								class="mt-1 block w-full px-5 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+								placeholder="800.00"
+							/>
+						</div>
+					</div>
+
+					<div>
+						<label for="price_max" class="block text-sm font-medium text-gray-700">Maximum Price</label>
+						<div class="mt-1 relative rounded-md shadow-sm">
+							<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+								<span class="text-gray-500 sm:text-sm">$</span>
+							</div>
+							<input 
+								type="number"
+								name="price_max"
+								id="price_max"
+								step="0.01"
+								required
+								class="mt-1 block w-full px-5 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+								placeholder="1500.00"
+							/>
+						</div>
+					</div>
+				{/if}
 				
 				<div class="sm:col-span-2">
 					<label for="description" class="block text-sm font-medium text-gray-700">Description</label>
@@ -191,21 +295,27 @@
 						rows="3"
 						required
 						class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-						placeholder="Brief description of what this plan includes..."
+						placeholder={selectedPlanType === 'subscription' ? 'Brief description of what this plan includes...' : 'Brief description of this project type...'}
 					></textarea>
 				</div>
-				
-				<div>
-					<label for="billing_period" class="block text-sm font-medium text-gray-700">Billing Period</label>
-					<select 
-						name="billing_period" 
-						id="billing_period" 
-						required
+
+				<!-- Features Field -->
+				<div class="sm:col-span-2">
+					<label for="features" class="block text-sm font-medium text-gray-700">
+						Features
+						{#if selectedPlanType === 'one_time_project'}
+							<span class="text-xs text-gray-500">(one per line)</span>
+						{:else}
+							<span class="text-xs text-gray-500">(JSON format)</span>
+						{/if}
+					</label>
+					<textarea 
+						name="features" 
+						id="features" 
+						rows="4"
 						class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-					>
-						<option value="monthly">Monthly</option>
-						<option value="yearly">Yearly</option>
-					</select>
+						placeholder={selectedPlanType === 'subscription' ? '{"max_projects": 5, "support_level": "basic"}' : 'Custom website design\nResponsive mobile layout\nBasic SEO setup\nContact form integration'}
+					></textarea>
 				</div>
 				
 				<div class="flex items-center">
@@ -226,7 +336,7 @@
 						type="submit"
 						class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
 					>
-						Create Plan
+						Create {selectedPlanType === 'subscription' ? 'Subscription Plan' : 'One-Time Project'}
 					</button>
 				</div>
 			</form>

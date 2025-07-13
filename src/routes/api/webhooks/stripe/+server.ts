@@ -62,6 +62,10 @@ export const POST: RequestHandler = async ({ request }) => {
 				await handlePaymentFailed(event.data.object as Stripe.Invoice);
 				break;
 
+			case 'invoice.paid':
+				await handleOneTimeInvoicePaid(event.data.object as Stripe.Invoice);
+				break;
+
 			case 'customer.subscription.updated':
 				await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
 				break;
@@ -76,6 +80,16 @@ export const POST: RequestHandler = async ({ request }) => {
 
 			case 'invoice.voided':
 				await handleInvoiceVoided(event.data.object as Stripe.Invoice);
+				break;
+
+			// Handle invoice lifecycle events (mostly informational)
+			case 'invoiceitem.created':
+			case 'invoice.created':
+			case 'invoice.updated':
+			case 'invoice.finalized':
+			case 'invoice.sent':
+				// These are informational events, we handle the important ones above
+				console.log(`Invoice lifecycle event: ${event.type}`);
 				break;
 
 			default:
@@ -154,12 +168,55 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 }
 
 /**
- * Handle successful payment
+ * Handle one-time invoice paid
+ */
+async function handleOneTimeInvoicePaid(invoice: Stripe.Invoice) {
+	// Check if this is a one-time invoice (not related to a subscription)
+	if ((invoice as any).subscription) {
+		return; // This is a subscription invoice, not a one-time invoice
+	}
+
+	try {
+		const adminPB = await getAdminPB();
+		
+		// Find one-time invoice by Stripe invoice ID
+		const oneTimeInvoices = await adminPB.collection('one_time_invoices').getList(1, 1, {
+			filter: `stripe_invoice_id = "${invoice.id}"`,
+		});
+
+		if (oneTimeInvoices.items.length === 0) {
+			console.log(`No one-time invoice found for Stripe invoice ${invoice.id}`);
+			return;
+		}
+
+		const oneTimeInvoice = oneTimeInvoices.items[0];
+
+		// Update one-time invoice status to paid and store PDF URL
+		await adminPB.collection('one_time_invoices').update(oneTimeInvoice.id, {
+			status: 'paid',
+			invoice_pdf: invoice.invoice_pdf || undefined,
+		});
+
+		console.log(`One-time invoice ${oneTimeInvoice.id} marked as paid`);
+	} catch (error) {
+		console.error('Failed to handle one-time invoice paid:', error);
+	}
+}
+
+/**
+ * Handle successful payment (for subscriptions)
  */
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
+	// Handle both subscription invoices and one-time invoices
+	if (!(invoice as any).subscription) {
+		// This is a one-time invoice
+		await handleOneTimeInvoicePaid(invoice);
+		return;
+	}
+
 	// Access subscription ID from invoice lines or subscription property
-	const stripeSubscriptionId = typeof invoice.subscription === 'string' 
-		? invoice.subscription 
+	const stripeSubscriptionId = typeof (invoice as any).subscription === 'string' 
+		? (invoice as any).subscription 
 		: invoice.lines?.data?.[0]?.subscription;
 
 	if (!stripeSubscriptionId) {
@@ -197,9 +254,39 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
  * Handle failed payment
  */
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
+	// Handle both subscription invoices and one-time invoices
+	if (!(invoice as any).subscription) {
+		// This is a one-time invoice
+		try {
+			const adminPB = await getAdminPB();
+			
+			// Find one-time invoice by Stripe invoice ID
+			const oneTimeInvoices = await adminPB.collection('one_time_invoices').getList(1, 1, {
+				filter: `stripe_invoice_id = "${invoice.id}"`,
+			});
+
+			if (oneTimeInvoices.items.length === 0) {
+				console.log(`No one-time invoice found for Stripe invoice ${invoice.id}`);
+				return;
+			}
+
+			const oneTimeInvoice = oneTimeInvoices.items[0];
+
+			// Update one-time invoice status to uncollectible
+			await adminPB.collection('one_time_invoices').update(oneTimeInvoice.id, {
+				status: 'uncollectible',
+			});
+
+			console.log(`One-time invoice ${oneTimeInvoice.id} marked as uncollectible`);
+		} catch (error) {
+			console.error('Failed to handle one-time invoice payment failed:', error);
+		}
+		return;
+	}
+
 	// Access subscription ID from invoice lines or subscription property
-	const stripeSubscriptionId = typeof invoice.subscription === 'string' 
-		? invoice.subscription 
+	const stripeSubscriptionId = typeof (invoice as any).subscription === 'string' 
+		? (invoice as any).subscription 
 		: invoice.lines?.data?.[0]?.subscription;
 
 	if (!stripeSubscriptionId) {
@@ -359,9 +446,39 @@ async function handleChargeRefunded(charge: Stripe.Charge) {
  * Handle invoice voided
  */
 async function handleInvoiceVoided(invoice: Stripe.Invoice) {
+	// Handle both subscription invoices and one-time invoices
+	if (!(invoice as any).subscription) {
+		// This is a one-time invoice
+		try {
+			const adminPB = await getAdminPB();
+			
+			// Find one-time invoice by Stripe invoice ID
+			const oneTimeInvoices = await adminPB.collection('one_time_invoices').getList(1, 1, {
+				filter: `stripe_invoice_id = "${invoice.id}"`,
+			});
+
+			if (oneTimeInvoices.items.length === 0) {
+				console.log(`No one-time invoice found for Stripe invoice ${invoice.id}`);
+				return;
+			}
+
+			const oneTimeInvoice = oneTimeInvoices.items[0];
+
+			// Update one-time invoice status to void
+			await adminPB.collection('one_time_invoices').update(oneTimeInvoice.id, {
+				status: 'void',
+			});
+
+			console.log(`One-time invoice ${oneTimeInvoice.id} marked as void`);
+		} catch (error) {
+			console.error('Failed to handle one-time invoice voided:', error);
+		}
+		return;
+	}
+
 	// Access subscription ID from invoice lines or subscription property
-	const stripeSubscriptionId = typeof invoice.subscription === 'string' 
-		? invoice.subscription 
+	const stripeSubscriptionId = typeof (invoice as any).subscription === 'string' 
+		? (invoice as any).subscription 
 		: invoice.lines?.data?.[0]?.subscription;
 
 	if (!stripeSubscriptionId) {
