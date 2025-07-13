@@ -1,4 +1,4 @@
-import { test, expect, TestDataHelpers } from '../fixtures/test-data.js';
+import { test, expect, TestDataHelpers } from '../fixtures/test-data';
 import { LoginPage } from '../pages/login-page.js';
 import { RegistrationPage } from '../pages/registration-page.js';
 
