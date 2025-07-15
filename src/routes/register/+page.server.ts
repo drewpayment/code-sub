@@ -23,7 +23,8 @@ export const actions: Actions = {
                 email, 
                 password, 
                 passwordConfirm,
-                role: 'customer' // Required field - default new users to customer role
+                role: 'customer', // Required field - default new users to customer role
+                emailVisibility: true // Allow email to be visible to admin users
             });
             await locals.pb.collection('users').requestVerification(email);
         } catch (err: unknown) {

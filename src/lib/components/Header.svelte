@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { Container } from '$lib';
 	import { page } from '$app/stores';
-	import { currentUser, pb } from '$lib/pocketbase';
-	import { goto } from '$app/navigation';
+	import { currentUser } from '$lib/pocketbase';
 
 	const navLinks = [
 		{ href: '/services', text: 'Services' },
@@ -39,13 +38,6 @@
 		if (mobileMenuOpen && !target.closest('header')) {
 			mobileMenuOpen = false;
 		}
-	}
-
-	function handleLogout() {
-		pb.authStore.clear();
-		// The currentUser store will update automatically via the onChange handler in pocketbase.ts
-		closeMobileMenu();
-		goto('/');
 	}
 </script>
 
@@ -97,9 +89,11 @@
 					>
 						Account
 					</a>
-					<button onclick={handleLogout} class="text-sm text-gray-600 hover:text-blue-600 transition-colors">
-						Logout
-					</button>
+					<form method="POST" action="/logout" class="inline">
+						<button type="submit" class="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+							Logout
+						</button>
+					</form>
 				{:else}
 					<a
 						href="/login"
@@ -197,9 +191,11 @@
 							class:hover:bg-gray-50={$page.url.pathname !== '/account'}
 						>Account</a>
 						
-						<button onclick={handleLogout} class="block w-full text-left px-3 py-2 text-base font-medium text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-gray-100">
-							Logout
-						</button>
+						<form method="POST" action="/logout" class="block w-full">
+							<button type="submit" class="block w-full text-left px-3 py-2 text-base font-medium text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-gray-100">
+								Logout
+							</button>
+						</form>
 					{:else}
 						<a 
 							href="/login" 

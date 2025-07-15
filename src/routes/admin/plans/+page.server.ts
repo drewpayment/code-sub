@@ -1,7 +1,9 @@
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { SubscriptionService } from '$lib/pocketbase';
-import type { BillingPeriod } from '$lib/types/subscription';
+import type { BillingPeriod, PlanType } from '$lib/types/subscription';
+import type { CreatePlanData } from '$lib/types/subscription';
+import type { Plan } from '$lib/types/subscription';
 
 export const load: PageServerLoad = async () => {
 	try {
@@ -25,35 +27,78 @@ export const actions: Actions = {
 			const formData = await request.formData();
 			const name = formData.get('name') as string;
 			const description = formData.get('description') as string;
-			const price = Number.parseFloat(formData.get('price') as string);
-			const billing_period = formData.get('billing_period') as BillingPeriod;
+			const type = formData.get('type') as PlanType;
 			const is_active = formData.get('is_active') === 'on';
 			
-			// Parse features if provided
-			const featuresText = formData.get('features') as string;
-			let features = {};
-			if (featuresText) {
-				try {
-					features = JSON.parse(featuresText);
-				} catch {
-					features = { description: featuresText };
-				}
-			}
-
-			if (!name || Number.isNaN(price) || !billing_period) {
+			if (!name || !type) {
 				return fail(400, { 
-					error: 'Name, price, and billing period are required' 
+					error: 'Name and plan type are required' 
 				});
 			}
 
-			const plan = await SubscriptionService.createPlan({
+			// Handle plan data based on type
+			const planData = {
 				name,
 				description,
-				price,
-				billing_period,
-				features,
+				type,
 				is_active
-			});
+			} as CreatePlanData;
+
+			if (type === 'subscription') {
+				const price = Number.parseFloat(formData.get('price') as string);
+				const billing_period = formData.get('billing_period') as BillingPeriod;
+				
+				if (Number.isNaN(price) || !billing_period) {
+					return fail(400, { 
+						error: 'Price and billing period are required for subscription plans' 
+					});
+				}
+				
+				planData.price = price;
+				planData.billing_period = billing_period;
+				
+				// Parse features for subscriptions (JSON format)
+				const featuresText = formData.get('features') as string;
+				if (featuresText) {
+					try {
+						planData.features = JSON.parse(featuresText);
+					} catch {
+						planData.features = { description: featuresText };
+					}
+				}
+			} else if (type === 'one_time_project') {
+				const price_min = Number.parseFloat(formData.get('price_min') as string);
+				const price_max = Number.parseFloat(formData.get('price_max') as string);
+				
+				if (Number.isNaN(price_min) || Number.isNaN(price_max)) {
+					return fail(400, { 
+						error: 'Price range (min and max) is required for one-time projects' 
+					});
+				}
+				
+				if (price_min >= price_max) {
+					return fail(400, { 
+						error: 'Minimum price must be less than maximum price' 
+					});
+				}
+				
+				planData.price_min = price_min;
+				planData.price_max = price_max;
+				
+				// Parse features for one-time projects (array format)
+				const featuresText = formData.get('features') as string;
+				if (featuresText) {
+					try {
+						// Try parsing as JSON array first
+						planData.features = JSON.parse(featuresText);
+					} catch {
+						// If not valid JSON, split by newlines/commas
+						planData.features = featuresText.split(/\n|,/).map(f => f.trim()).filter(f => f);
+					}
+				}
+			}
+
+			const plan = await SubscriptionService.createPlan(planData);
 
 			return {
 				success: true,
@@ -74,35 +119,86 @@ export const actions: Actions = {
 			const id = formData.get('id') as string;
 			const name = formData.get('name') as string;
 			const description = formData.get('description') as string;
-			const price = Number.parseFloat(formData.get('price') as string);
-			const billing_period = formData.get('billing_period') as BillingPeriod;
+			const type = formData.get('type') as PlanType;
 			const is_active = formData.get('is_active') === 'on';
-			
-			// Parse features if provided
-			const featuresText = formData.get('features') as string;
-			let features = {};
-			if (featuresText) {
-				try {
-					features = JSON.parse(featuresText);
-				} catch {
-					features = { description: featuresText };
-				}
-			}
 
-			if (!id || !name || Number.isNaN(price) || !billing_period) {
+			if (!id || !name || !type) {
 				return fail(400, { 
-					error: 'ID, name, price, and billing period are required' 
+					error: 'ID, name, and plan type are required' 
 				});
 			}
 
-			const plan = await SubscriptionService.updatePlan(id, {
+			// Handle plan data based on type
+			const planData = {
 				name,
 				description,
-				price,
-				billing_period,
-				features,
+				type,
 				is_active
-			});
+			} as Partial<Plan>;
+
+			if (type === 'subscription') {
+				const price = Number.parseFloat(formData.get('price') as string);
+				const billing_period = formData.get('billing_period') as BillingPeriod;
+				
+				if (Number.isNaN(price) || !billing_period) {
+					return fail(400, { 
+						error: 'Price and billing period are required for subscription plans' 
+					});
+				}
+				
+				planData.price = price;
+				planData.billing_period = billing_period;
+				
+				// Clear one-time project fields
+				planData.price_min = undefined;
+				planData.price_max = undefined;
+				
+				// Parse features for subscriptions (JSON format)
+				const featuresText = formData.get('features') as string;
+				if (featuresText) {
+					try {
+						planData.features = JSON.parse(featuresText);
+					} catch {
+						planData.features = { description: featuresText };
+					}
+				}
+			} else if (type === 'one_time_project') {
+				const price_min = Number.parseFloat(formData.get('price_min') as string);
+				const price_max = Number.parseFloat(formData.get('price_max') as string);
+				
+				if (Number.isNaN(price_min) || Number.isNaN(price_max)) {
+					return fail(400, { 
+						error: 'Price range (min and max) is required for one-time projects' 
+					});
+				}
+				
+				if (price_min >= price_max) {
+					return fail(400, { 
+						error: 'Minimum price must be less than maximum price' 
+					});
+				}
+				
+				planData.price_min = price_min;
+				planData.price_max = price_max;
+				
+				// Clear subscription fields
+				planData.price = undefined;
+				planData.billing_period = undefined;
+				
+				// Parse features for one-time projects (array format)
+				const featuresText = formData.get('features') as string;
+				if (featuresText) {
+					try {
+						// Try parsing as JSON array first
+						planData.features = JSON.parse(featuresText);
+					} catch {
+						// If not valid JSON, split by newlines/commas
+						planData.features = featuresText.split(/\n|,/).map(f => f.trim()).filter(f => f);
+					}
+				}
+			}
+
+			const plan = await SubscriptionService.updatePlan(id, planData);
 
 			return {
 				success: true,

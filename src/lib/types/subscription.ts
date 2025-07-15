@@ -4,7 +4,11 @@ export type UserRole = 'customer' | 'employee' | 'manager' | 'admin' | 'super_ad
 
 export type BillingPeriod = 'monthly' | 'yearly' | 'one_time';
 
+export type PlanType = 'subscription' | 'one_time_project';
+
 export type SubscriptionStatus = 'pending' | 'active' | 'overdue' | 'cancelled' | 'inactive';
+
+export type InvoiceStatus = 'draft' | 'open' | 'paid' | 'uncollectible' | 'void';
 
 // Enhanced User type with role
 export interface User {
@@ -20,14 +24,19 @@ export interface User {
 	updated: string;
 }
 
-// Plan type
+// Plan type - updated to support both subscriptions and one-time projects
 export interface Plan {
 	id: string;
 	name: string;
 	description?: string;
-	price: number;
-	billing_period: BillingPeriod;
-	features?: PlanFeatures;
+	type: PlanType; // New field to distinguish plan types
+	// For subscriptions
+	price?: number;
+	billing_period?: BillingPeriod; // Now optional, only for subscriptions
+	// For one-time projects
+	price_min?: number; // Price range minimum
+	price_max?: number; // Price range maximum
+	features?: PlanFeatures | string[]; // Can be structured features or simple string array
 	is_active?: boolean;
 	stripe_price_id?: string;
 	created: string;
@@ -56,6 +65,25 @@ export interface Subscription {
 	end_date?: string;
 	stripe_subscription_id?: string;
 	notes?: string;
+	created: string;
+	updated: string;
+	// Expanded fields when fetching with relations
+	expand?: {
+		customer_id?: User;
+		plan_id?: Plan;
+	};
+}
+
+// One-time invoice type
+export interface OneTimeInvoice {
+	id: string;
+	customer_id: string;
+	plan_id: string;
+	stripe_invoice_id: string;
+	status: InvoiceStatus;
+	amount: number;
+	due_date?: string;
+	invoice_pdf?: string;
 	created: string;
 	updated: string;
 	// Expanded fields when fetching with relations
@@ -106,9 +134,14 @@ export function canViewAllCustomers(role: UserRole): boolean {
 export interface CreatePlanData {
 	name: string;
 	description?: string;
-	price: number;
-	billing_period: BillingPeriod;
-	features?: PlanFeatures;
+	type: PlanType; // Required field to specify plan type
+	// For subscriptions
+	price?: number;
+	billing_period?: BillingPeriod;
+	// For one-time projects  
+	price_min?: number;
+	price_max?: number;
+	features?: PlanFeatures | string[];
 	is_active?: boolean;
 }
 
@@ -128,6 +161,21 @@ export interface UpdateSubscriptionData {
 	notes?: string;
 }
 
+export interface CreateOneTimeInvoiceData {
+	customer_id: string;
+	plan_id: string;
+	stripe_invoice_id: string;
+	status: InvoiceStatus;
+	amount: number;
+	due_date?: string;
+	invoice_pdf?: string;
+}
+
+export interface UpdateOneTimeInvoiceData {
+	status?: InvoiceStatus;
+	invoice_pdf?: string;
+}
+
 // API response types
 export interface SubscriptionListResponse {
 	items: Subscription[];
@@ -139,6 +187,14 @@ export interface SubscriptionListResponse {
 
 export interface CustomerListResponse {
 	items: User[];
+	page: number;
+	perPage: number;
+	totalItems: number;
+	totalPages: number;
+}
+
+export interface OneTimeInvoiceListResponse {
+	items: OneTimeInvoice[];
 	page: number;
 	perPage: number;
 	totalItems: number;

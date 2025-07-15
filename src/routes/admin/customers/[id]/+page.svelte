@@ -2,9 +2,19 @@
 	export let data: any;
 	export let form: any;
 
+	let selectedPlan: any = null;
+	let invoiceAmount = '';
+
 	const formatDate = (date: string | null): string => {
 		if (!date) return 'N/A';
 		return new Date(date).toLocaleDateString();
+	};
+
+	const formatCurrency = (amount: number): string => {
+		return new Intl.NumberFormat('en-US', {
+			style: 'currency',
+			currency: 'USD'
+		}).format(amount);
 	};
 
 	const getStatusColor = (status: string): string => {
@@ -14,10 +24,54 @@
 		return 'bg-gray-100 text-gray-800';
 	};
 
+	const getInvoiceStatusColor = (status: string): string => {
+		if (status === 'paid') return 'bg-green-100 text-green-800';
+		if (status === 'open') return 'bg-blue-100 text-blue-800';
+		if (status === 'draft') return 'bg-gray-100 text-gray-800';
+		if (status === 'uncollectible') return 'bg-red-100 text-red-800';
+		if (status === 'void') return 'bg-gray-100 text-gray-800';
+		return 'bg-gray-100 text-gray-800';
+	};
+
 	const handleDeleteClick = (e: Event) => {
 		if (!confirm('Are you sure you want to delete this subscription?')) {
 			e.preventDefault();
 		}
+	};
+
+	const handlePlanChange = (event: Event) => {
+		const target = event.target as HTMLSelectElement;
+		const planId = target.value;
+		selectedPlan = data.projectPlans?.find((plan: any) => plan.id === planId) || null;
+		
+		// Reset amount when plan changes
+		invoiceAmount = '';
+	};
+
+	const validateAmount = (): boolean => {
+		if (!selectedPlan || !invoiceAmount) return false;
+		
+		const amount = Number.parseFloat(invoiceAmount);
+		const minPrice = selectedPlan.price_min || 0;
+		const maxPrice = selectedPlan.price_max || Number.POSITIVE_INFINITY;
+		
+		return amount >= minPrice && amount <= maxPrice;
+	};
+
+	const getAmountError = (): string => {
+		if (!selectedPlan || !invoiceAmount) return '';
+		
+		const amount = Number.parseFloat(invoiceAmount);
+		const minPrice = selectedPlan.price_min || 0;
+		const maxPrice = selectedPlan.price_max || Number.POSITIVE_INFINITY;
+		
+		if (amount < minPrice) {
+			return `Amount must be at least ${formatCurrency(minPrice)}`;
+		}
+		if (amount > maxPrice) {
+			return `Amount must not exceed ${formatCurrency(maxPrice)}`;
+		}
+		return '';
 	};
 </script>
 
@@ -227,6 +281,176 @@
 							<strong>To resolve:</strong> Have the customer complete payment setup from their account page, or consider migrating this subscription to Stripe billing.
 						</p>
 					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	<!-- One-Time Invoice Creation -->
+	{#if data.customer.stripe_customer_id && data.projectPlans && data.projectPlans.length > 0}
+		<div class="bg-white shadow rounded-lg mb-6">
+			<div class="px-6 py-4 border-b border-gray-200">
+				<h2 class="text-lg font-medium text-gray-900">Create One-Time Invoice</h2>
+			</div>
+			<div class="px-6 py-4">
+				{#if form?.error}
+					<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+						<p class="text-sm text-red-600">{form.error}</p>
+					</div>
+				{/if}
+				
+				{#if form?.success}
+					<div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+						<p class="text-sm text-green-600">{form.message}</p>
+					</div>
+				{/if}
+
+				<form method="POST" action="?/createOneTimeInvoice" class="space-y-4">
+					<div>
+						<label for="projectPlanId" class="block text-sm font-medium text-gray-700">Select Project Plan</label>
+						<select 
+							name="planId" 
+							id="projectPlanId" 
+							required
+							on:change={handlePlanChange}
+							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+						>
+							<option value="">Choose a project plan...</option>
+							{#each data.projectPlans as plan}
+								<option value={plan.id}>
+									{plan.name} - {formatCurrency(plan.price_min)} to {formatCurrency(plan.price_max)}
+								</option>
+							{/each}
+						</select>
+					</div>
+
+					{#if selectedPlan}
+						<div>
+							<label for="amount" class="block text-sm font-medium text-gray-700">
+								Amount (${formatCurrency(selectedPlan.price_min)} - {formatCurrency(selectedPlan.price_max)})
+							</label>
+							<div class="mt-1 relative rounded-md shadow-sm">
+								<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+									<span class="text-gray-500 sm:text-sm">$</span>
+								</div>
+								<input
+									type="number"
+									name="amount"
+									id="amount"
+									step="0.01"
+									min={selectedPlan.price_min}
+									max={selectedPlan.price_max}
+									bind:value={invoiceAmount}
+									required
+									class="block w-full pl-7 pr-12 border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+									placeholder="0.00"
+								/>
+							</div>
+							{#if getAmountError()}
+								<p class="mt-1 text-sm text-red-600">{getAmountError()}</p>
+							{/if}
+						</div>
+
+						<div class="bg-gray-50 p-3 rounded-md">
+							<h4 class="text-sm font-medium text-gray-900 mb-2">{selectedPlan.name}</h4>
+							{#if selectedPlan.description}
+								<p class="text-sm text-gray-600 mb-2">{selectedPlan.description}</p>
+							{/if}
+							{#if selectedPlan.features && Array.isArray(selectedPlan.features)}
+								<ul class="text-sm text-gray-600 space-y-1">
+									{#each selectedPlan.features as feature}
+										<li class="flex items-center">
+											<svg class="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+											</svg>
+											{feature}
+										</li>
+									{/each}
+								</ul>
+							{/if}
+						</div>
+					{/if}
+					
+					<div>
+						<button 
+							type="submit"
+							disabled={!validateAmount()}
+							class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+						>
+							Create & Send Invoice
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	{/if}
+
+	<!-- One-Time Invoice History -->
+	{#if data.oneTimeInvoices && data.oneTimeInvoices.length > 0}
+		<div class="bg-white shadow rounded-lg mb-6">
+			<div class="px-6 py-4 border-b border-gray-200">
+				<h2 class="text-lg font-medium text-gray-900">One-Time Invoice History</h2>
+			</div>
+			<div class="px-6 py-4">
+				<div class="overflow-x-auto">
+					<table class="min-w-full divide-y divide-gray-200">
+						<thead class="bg-gray-50">
+							<tr>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Plan
+								</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Amount
+								</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Status
+								</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Date Created
+								</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Actions
+								</th>
+							</tr>
+						</thead>
+						<tbody class="bg-white divide-y divide-gray-200">
+							{#each data.oneTimeInvoices as invoice}
+								<tr>
+									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+										{invoice.expand?.plan_id?.name || 'Unknown Plan'}
+									</td>
+									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+										{formatCurrency(invoice.amount)}
+									</td>
+									<td class="px-6 py-4 whitespace-nowrap">
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {getInvoiceStatusColor(invoice.status)}">
+											{invoice.status}
+										</span>
+									</td>
+									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+										{formatDate(invoice.created)}
+									</td>
+									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+										{#if invoice.invoice_pdf}
+											<a
+												href={invoice.invoice_pdf}
+												target="_blank"
+												rel="noopener noreferrer"
+												class="text-blue-600 hover:text-blue-700 inline-flex items-center"
+											>
+												<svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+												</svg>
+												View PDF
+											</a>
+										{:else}
+											<span class="text-gray-400">No PDF</span>
+										{/if}
+									</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
 				</div>
 			</div>
 		</div>

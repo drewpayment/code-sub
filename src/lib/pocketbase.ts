@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
 import PocketBase from 'pocketbase';
 import { writable } from 'svelte/store';
-import type { User, Plan, Subscription, UserRole } from './types/subscription';
+import type { User, Plan, Subscription, UserRole, OneTimeInvoice, CreateOneTimeInvoiceData, UpdateOneTimeInvoiceData } from './types/subscription';
 
 export const pb = new PocketBase('https://pocketbase.hoytlabs.cloud');
 
@@ -16,7 +16,8 @@ export const COLLECTIONS = {
 	USERS: 'users',
 	PLANS: 'plans',
 	SUBSCRIPTIONS: 'subscriptions',
-	CONTACT_SUBMISSIONS: 'contact_submissions'
+	CONTACT_SUBMISSIONS: 'contact_submissions',
+	ONE_TIME_INVOICES: 'one_time_invoices'
 } as const;
 
 // Typed collection helpers
@@ -93,6 +94,47 @@ export class SubscriptionService {
 			// No subscription found
 			return null;
 		}
+	}
+
+	// One-time invoices
+	static async getOneTimeInvoices(options?: {
+		page?: number;
+		perPage?: number;
+		filter?: string;
+		expand?: string;
+		sort?: string;
+	}) {
+		return pb.collection(COLLECTIONS.ONE_TIME_INVOICES).getList<OneTimeInvoice>(
+			options?.page || 1,
+			options?.perPage || 50,
+			{
+				filter: options?.filter,
+				expand: options?.expand || 'customer_id,plan_id',
+				sort: options?.sort || '-created'
+			}
+		);
+	}
+
+	static async getOneTimeInvoice(id: string) {
+		return pb.collection(COLLECTIONS.ONE_TIME_INVOICES).getOne<OneTimeInvoice>(id, {
+			expand: 'customer_id,plan_id'
+		});
+	}
+
+	static async createOneTimeInvoice(data: CreateOneTimeInvoiceData) {
+		return pb.collection(COLLECTIONS.ONE_TIME_INVOICES).create<OneTimeInvoice>(data);
+	}
+
+	static async updateOneTimeInvoice(id: string, data: UpdateOneTimeInvoiceData) {
+		return pb.collection(COLLECTIONS.ONE_TIME_INVOICES).update<OneTimeInvoice>(id, data);
+	}
+
+	static async updateOneTimeInvoiceByStripeId(stripeInvoiceId: string, data: UpdateOneTimeInvoiceData) {
+		return pb.collection(COLLECTIONS.ONE_TIME_INVOICES).getFirstListItem<OneTimeInvoice>(
+			`stripe_invoice_id = "${stripeInvoiceId}"`
+		).then(invoice => 
+			pb.collection(COLLECTIONS.ONE_TIME_INVOICES).update<OneTimeInvoice>(invoice.id, data)
+		);
 	}
 
 	// Users/Customers

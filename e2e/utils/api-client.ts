@@ -98,25 +98,33 @@ export class TestApiClient {
 	async createPlan(planData: Omit<TestPlan, 'id'>): Promise<TestPlan> {
 		try {
 			await this.authenticateAsAdmin();
+			
+			// Determine if this is a one-time project based on features or name
+			const isOneTimeProject = planData.name.toLowerCase().includes('project') || 
+									planData.features.some(f => f.toLowerCase().includes('project'));
+			
 			const plan = await this.pb.collection('plans').create({
 				name: planData.name,
 				description: planData.description,
-				price: planData.price,
-				billing_period: planData.interval, // Use correct field name from schema
-				stripe_price_id: planData.stripePriceId || `price_test_${Date.now()}`, // Use correct field name
+				type: isOneTimeProject ? 'one_time_project' : 'subscription', // Set the plan type
+				price: isOneTimeProject ? undefined : planData.price, // Only for subscriptions
+				price_min: isOneTimeProject ? Math.floor(planData.price * 0.8) : undefined, // 80% of price as min
+				price_max: isOneTimeProject ? Math.floor(planData.price * 1.2) : undefined, // 120% of price as max
+				billing_period: isOneTimeProject ? undefined : planData.interval, // Only for subscriptions
+				stripe_price_id: planData.stripePriceId || `price_test_${Date.now()}`,
 				features: planData.features,
-				is_active: planData.active, // Use correct field name from schema
+				is_active: planData.active,
 			});
 
 			return {
 				id: plan.id,
 				name: plan.name,
 				description: plan.description,
-				price: plan.price,
-				interval: plan.billing_period, // Map back to expected interface
-				stripePriceId: plan.stripe_price_id, // Map back to expected interface
+				price: plan.price || plan.price_min || 0, // Return price_min for one-time projects
+				interval: plan.billing_period || 'month', // Default interval for compatibility
+				stripePriceId: plan.stripe_price_id,
 				features: plan.features,
-				active: plan.is_active, // Map back to expected interface
+				active: plan.is_active,
 				created: plan.created,
 				updated: plan.updated,
 			};
