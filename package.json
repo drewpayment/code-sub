@@ -23,7 +23,7 @@
 		"stripe:webhook": "stripe listen --forward-to localhost:5173/api/webhooks/stripe"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.0.0",
+		"@biomejs/biome": "2.1.2",
 		"@playwright/test": "^1.49.1",
 		"@sveltejs/adapter-auto": "^6.0.0",
 		"@sveltejs/kit": "^2.16.0",
