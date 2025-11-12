@@ -50,6 +50,6 @@
 		"lucide-svelte": "^0.513.0",
 		"pocketbase": "^0.26.1",
 		"postgres": "^3.4.5",
-		"stripe": "^18.2.1"
+		"stripe": "^19.0.0"
 	}
 }
