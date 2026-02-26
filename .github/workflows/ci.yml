@@ -83,14 +83,14 @@ jobs:
         POCKETBASE_ADMIN_EMAIL: admin@example.com
         POCKETBASE_ADMIN_PASSWORD: admin123456
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       if: always()
       with:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       if: always()
       with:
         name: test-results
